@@ -1,0 +1,11 @@
+
+CREATE TABLE IF NOT EXISTS node (
+    id INTEGER PRIMARY KEY,
+    previous_node_id INTEGER,
+    previous_node_link INTEGER NOT NULL,
+    type INTEGER NOT NULL,
+    text TEXT DEFAULT "",
+    expanded INTEGER NOT NULL,
+
+    UNIQUE(previous_node_id, previous_node_link)
+);
