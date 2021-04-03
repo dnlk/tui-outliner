@@ -139,7 +139,7 @@ def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, l
 
 def create_node_after_as_sibling(cursor, node_id: NodeId, previous_sibling_id: NodeId):
 
-    result1 = create_node(cursor, node_id, SWAP_ID, TreeLink.sibling)
+    result1 = create_node(cursor, node_id, SWAP_ID, TreeLink.Sibling)
     next_sibling_id = get_next_sibling(cursor, previous_sibling_id)
     result2 = switch_previous_node(cursor, next_sibling_id, node_id, TreeLink.sibling)
     result3 = switch_previous_node(cursor, node_id, previous_sibling_id)

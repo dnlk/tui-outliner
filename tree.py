@@ -3,6 +3,7 @@ from typing import *
 
 from containers_ext import BijectiveMap
 from enums import TreeLink
+import func
 
 
 Id = TypeVar('Id')
@@ -88,6 +89,19 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
 
     def get_parent(self, _id: Id) -> Id:
         return self.get_closest_previous_of_type(_id, TreeLink.Parent)
+
+    def get_ancestors(self, _id: Id) -> List[Id]:
+        return func.iterate(
+            func=self.get_parent,
+            exit_condition=lambda id_it: id_it is not None,
+            initial_value=_id,
+            include_first=True,
+            include_last=False
+        )
+
+    def get_depth_relative_to(self, _id: Id, ancestor_id: Id) -> int:
+        ancestors = self.get_ancestors(_id)
+        return ancestors.index(ancestor_id)
 
     def get_next_sibling(self, _id: Id) -> Id:
         return self.get_next(_id, TreeLink.Sibling)

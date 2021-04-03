@@ -5,6 +5,7 @@ from typing import Tuple, Union, TypeVar, Optional, Dict, Any
 
 from enums import Mode, TreeLink
 from node_types import NodeId, PreviousNode
+from text_editor import Cursor
 
 
 # @dataclass
@@ -75,18 +76,18 @@ class ChangeMode:
 
 @dataclass
 class AddCharacter:
-    cursor_pos: int
+    cursor: Cursor
     char: str
 
 
 @dataclass
 class SetCursor:
-    cursos_pos: int
+    cursor: Cursor
 
 
 @dataclass
 class RemoveCharacter:
-    index: int
+    cursor: Cursor
 
 
 @dataclass
@@ -95,7 +96,7 @@ class SetNodeText:
     text: str
 
 
-Change = Union[NodeChange, NewNodeNextSibling, NewSelection, MoveNode, AddCharacter]
+Change = Union[NodeChange, NewNodeNextSibling, NewSelection, MoveNode, AddCharacter, SetCursor]
 
 
 

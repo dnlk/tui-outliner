@@ -51,6 +51,26 @@ class SetCursor(Action):
 
 
 @dataclass
+class CursorIncrement(Action):
+    pass
+
+
+@dataclass
+class CursorDecrement(Action):
+    pass
+
+
+@dataclass
+class CursorRowIncrement(Action):
+    pass
+
+
+@dataclass
+class CursorRowDecrement(Action):
+    pass
+
+
+@dataclass
 class RemoveCharacterBeforeCursor(Action):
     pass
 

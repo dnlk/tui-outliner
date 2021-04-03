@@ -81,31 +81,48 @@ async def action_event_loop(
         ui_state: UIState,
         node_tree: NodeTree,
         change_handler: ChangeHandler,
+        screen,
 ):
     # action_events = ActionEventAsync(ui_state)
     # while True:
     #     next_action = await action_events.next_action()
 
-    with ManagedScreen() as screen:
-        drawer = draw.Draw(screen, ui_state.selection, ui_state.node_edit)
+    drawer = draw.Draw(screen, ui_state.selection, ui_state.node_edit, screen.width)
+
+    drawer.draw_node_tree(node_tree, node_tree.root_node, ui_state.mode)
+    screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
+
+    action_events = ActionEventAsync(ui_state)
+    action_to_change = ActionToChange(node_tree, ui_state.selection, ui_state.node_edit, screen)
+
+    while True:
+        next_action = await action_events.next_action()
+        if not next_action:
+            continue
+        change_action = action_to_change.determine_changes(next_action)
+
+        for change in change_action.changes:
+            change_handler.handle_change(change)
 
         drawer.draw_node_tree(node_tree, node_tree.root_node, ui_state.mode)
-        screen.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
+        screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
+        screen.screen_api.print_at(f'Width: {screen.width}', 0, screen.height - 1, colour=7)
 
-        action_events = ActionEventAsync(ui_state)
-        action_to_change = ActionToChange(node_tree, ui_state.selection, ui_state.node_edit)
 
-        while True:
-            next_action = await action_events.next_action()
-            if not next_action:
-                continue
-            change_action = action_to_change.determine_changes(next_action)
+class Screen:
+    def __init__(self, screen):
+        self.screen_api = screen
 
-            for change in change_action.changes:
-                change_handler.handle_change(change)
+    @property
+    def width(self):
+        return self.screen_api.width
 
-            drawer.draw_node_tree(node_tree, node_tree.root_node, ui_state.mode)
-            screen.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
+    @property
+    def height(self):
+        return self.screen_api.height
+
+    def remaining_width_for_node_depth(self, depth: int):
+        return self.width - (2 * depth + 2)
 
 
 async def main():
@@ -120,9 +137,14 @@ async def main():
     node_edit = Edit()
     ui_state = UIState(enums.Mode.Navigate, selection, node_edit)
     ui_state.mode = enums.Mode.Navigate
-    change_handler = ChangeHandler(node_tree, selection, ui_state, conn)
 
-    await action_event_loop(ui_state, node_tree, change_handler)
+    with ManagedScreen() as _screen:
+
+        screen = Screen(_screen)
+
+        change_handler = ChangeHandler(node_tree, selection, ui_state, screen, conn)
+
+        await action_event_loop(ui_state, node_tree, change_handler, screen)
 
 
 if __name__ == '__main__':

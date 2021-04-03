@@ -17,10 +17,14 @@ class ChangeAction:
 
 
 class ActionToChange:
-    def __init__(self, node_tree: NodeTree, selection: Selection, node_edit: Edit):
+
+    node_edit: Edit
+
+    def __init__(self, node_tree: NodeTree, selection: Selection, node_edit: Edit, screen):
         self.node_tree = node_tree
         self.selection = selection
         self.node_edit = node_edit
+        self.screen = screen
 
     def determine_changes(self, action) -> ChangeAction:
         changes = []
@@ -51,21 +55,42 @@ class ActionToChange:
                 if parent_id != self.node_tree.root_node:
                     changes.append(ch.MoveNode(selected_node_id, parent_id, TreeLink.Sibling))
         elif action.is_type(act.AddCharacterToEdit):
-            cursor = self.node_edit.cursor_index
+            cursor = self.node_edit.text_editor.cursor
+            new_cursor = self.node_edit.text_editor.cursor.with_offset_incr(1)
             changes.append(ch.AddCharacter(cursor, action.char))
+            changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.FinishEditing):
             changes.append(ch.ChangeMode(Mode.Navigate))
-            changes.append(ch.SetNodeText(self.node_edit.node_id, self.node_edit.text))
-        elif action.is_type(act.SetCursor):
-            changes.append(ch.SetCursor(action.cursor_pos))
+            changes.append(ch.SetNodeText(self.node_edit.node_id, self.node_edit.text_editor.get_data()))
+        elif action.is_type(act.CursorIncrement):
+            new_cursor = self.node_edit.text_editor.calculate_cursor.get_incr_cursor()
+            changes.append(ch.SetCursor(new_cursor))
+        elif action.is_type(act.CursorDecrement):
+            new_cursor = self.node_edit.text_editor.calculate_cursor.get_decr_cursor()
+            changes.append(ch.SetCursor(new_cursor))
+        elif action.is_type(act.CursorRowIncrement):
+            node_depth = self.node_tree.get_depth(self.selection.selected_node_id)
+            remaining_width = self.screen.remaining_width_for_node_depth(node_depth)
+            new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_incr_row(remaining_width)
+            changes.append(ch.SetCursor(new_cursor))
+        elif action.is_type(act.CursorRowDecrement):
+            node_depth = self.node_tree.get_depth(self.selection.selected_node_id)
+            remaining_width = self.screen.remaining_width_for_node_depth(node_depth)
+            new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
+            changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.RemoveCharacterBeforeCursor):
-            cursor = self.node_edit.cursor_index
-            if cursor > 0:
-                changes.append(ch.RemoveCharacter(cursor - 1))
+            assert len(self.node_edit.text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+
+            if not self.node_edit.text_editor.calculate_cursor.is_origin():
+                new_cursor = self.node_edit.text_editor.calculate_cursor.get_decr_cursor()
+                changes.append(ch.SetCursor(new_cursor))
+                changes.append(ch.RemoveCharacter(new_cursor))
         elif action.is_type(act.RemoveCharacterAtCursor):
-            cursor = self.node_edit.cursor_index
-            if cursor < len(self.node_edit.text):
-                changes.append(ch.RemoveCharacter(cursor + 1))
+            assert len(self.node_edit.text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+
+            cursor = self.node_edit.text_editor.cursor
+            changes.append(ch.RemoveCharacter(cursor))
+
         else:
             print(f'Unhandled action: {action}')
 

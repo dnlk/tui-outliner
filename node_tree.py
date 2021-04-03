@@ -25,6 +25,11 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
     def is_root(self, _id: NodeId):
         return _id.id == self.root_node.id
 
+    def get_depth(self, _id: NodeId):
+        # return self.tree.get_depth_relative_to(_id, self.root_node)
+        assert self.root_node.id == consts.ROOT_NODE_ID, 'Have\'nt properly implemented root node yet'
+        return len(self.tree.get_ancestors(_id))
+
 #
 # class NodeTreeChange:
 #     node_tree: NodeTree
