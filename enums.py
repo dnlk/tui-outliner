@@ -16,3 +16,5 @@ class TreeLink(enum.Enum):
     Parent = 0
     Sibling = 1
 
+    def __str__(self):
+        return str(self.value)

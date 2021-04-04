@@ -39,6 +39,7 @@ class ActionToChange:
         elif action.is_type(act.NewNodeNextSibling):
             new_node_id = nd.get_next_available_temp_id()
             changes.append(ch.NewNodeNextSibling(new_node_id, self.selection.selected_node_id))
+            changes.append(ch.NewSelection(new_node_id))
         elif action.is_type(act.TabNode):
             selected_node_id = self.selection.selected_node_id
             if previous := self.node_tree.tree.get_previous(selected_node_id):
