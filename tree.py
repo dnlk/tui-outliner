@@ -123,10 +123,10 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
             if link_type == TreeLink.Sibling:
                 return node_id
 
-    def get_first_child(self, _id: Id) -> Id:
+    def get_first_child(self, _id: Id) -> Optional[Id]:
         return self.get_next(_id, TreeLink.Parent)
 
-    def get_last_child(self, _id: Id) -> Id:
+    def get_last_child(self, _id: Id) -> Optional[Id]:
         children = self.get_children(_id)
         if children:
             return children[-1]

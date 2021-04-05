@@ -20,6 +20,10 @@ class ActionEventAsync:
             return actions.NavigateDown(1)
         elif key_event == Key.UP:
             return actions.NavigateUp(1)
+        elif key_event == (Key.DOWN, Control):
+            return actions.MoveSelectedNodeDown()
+        elif key_event == (Key.UP, Control):
+            return actions.MoveSelectedNodeUp()
         elif key_event == Key.TAB:
             return actions.TabNode()
         elif key_event == (Key.TAB, Shift):

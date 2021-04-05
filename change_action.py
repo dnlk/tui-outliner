@@ -38,6 +38,20 @@ class ActionToChange:
         elif action.is_type(act.NavigateDown):
             if new_selected_node := self.selection.get_next_node():
                 changes.append(ch.NewSelection(new_selected_node))
+        elif action.is_type(act.MoveSelectedNodeUp):
+            node_id = self.selection.selected_node_id
+            if prev_node_id := self.selection.get_previous_node():
+                if prev_prev := self.node_tree.tree.get_previous(prev_node_id):
+                    prev_prev_id, prev_prev_link = prev_prev
+                    changes.append(ch.MoveNode(node_id, prev_prev_id, prev_prev_link))
+        elif action.is_type(act.MoveSelectedNodeDown):
+            node_id = self.selection.selected_node_id
+            if next_node_id := self.selection.get_next_non_descendant_node():
+                if self.node_tree.tree.get_first_child(next_node_id):
+                    link_type = TreeLink.Parent
+                else:
+                    link_type = TreeLink.Sibling
+                changes.append(ch.MoveNode(node_id, next_node_id, link_type))
         elif action.is_type(act.NewNodeNextSibling):
             new_node_id = nd.get_next_available_temp_id()
             changes.append(ch.NewNodeNextSibling(new_node_id, self.selection.selected_node_id))

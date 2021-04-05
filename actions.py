@@ -93,3 +93,13 @@ class DeleteSelectedNodeAndSelectNext(Action):
 @dataclass
 class DeleteSelectedNodeAndSelectPrevious(Action):
     pass
+
+
+@dataclass
+class MoveSelectedNodeUp(Action):
+    pass
+
+
+@dataclass
+class MoveSelectedNodeDown(Action):
+    pass
