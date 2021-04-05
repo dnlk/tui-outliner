@@ -32,9 +32,13 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
         return ancestors[1] == self.root_node and len(self.tree.get_children(self.root_node)) == 1
 
     def get_depth(self, _id: NodeId):
-        # return self.tree.get_depth_relative_to(_id, self.root_node)
         assert self.root_node.id == consts.ROOT_NODE_ID, 'Have\'nt properly implemented root node yet'
-        return len(self.tree.get_ancestors(_id))
+        ancestors = self.tree.get_ancestors(_id)
+
+        # The ancestors are expected to be [_id, <actual_ancestors>..., self.root_node]. We want to only count the
+        # actual ancestors.
+        assert len(ancestors) >= 2
+        return len(ancestors) - 2
 
 #
 # class NodeTreeChange:
