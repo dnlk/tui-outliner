@@ -26,6 +26,10 @@ class ActionEventAsync:
             return actions.UntabNode()
         elif key_event == Key.A:
             return actions.NewNodeNextSibling()
+        elif key_event == Key.DELETE:
+            return actions.DeleteSelectedNodeAndSelectNext()
+        elif key_event == Key.BACK:
+            return actions.DeleteSelectedNodeAndSelectPrevious()
         else:
             print(f'Unhandled key event: {key_event}')
 

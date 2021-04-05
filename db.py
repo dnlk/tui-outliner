@@ -187,6 +187,22 @@ def move_after(cursor, node_id: NodeId, previous_id: NodeId, link_type: TreeLink
     _insert_after(cursor, node_id, previous_id, link_type)
 
 
+def delete_node(cursor, node_id: NodeId):
+    _splice_node(cursor, node_id)
+
+    delete_node_query = """
+        DELETE FROM node
+        WHERE id=?1
+    """
+    result = run_query(
+        cursor,
+        delete_node_query,
+        args=[
+            node_id
+        ]
+    )
+
+
 def get_node(cursor, node_id: NodeId) -> NodeContext:
     query_node = """
         SELECT previous_node_id, previous_node_link, type, text, expanded

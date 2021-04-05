@@ -104,6 +104,10 @@ async def action_event_loop(
         for change in change_action.changes:
             change_handler.handle_change(change)
 
+        if ui_state.screen_needs_reset:
+            screen.screen_api.clear()
+            ui_state.screen_needs_reset = False
+
         drawer.draw_node_tree(node_tree, node_tree.root_node, ui_state.mode)
         screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
         screen.screen_api.print_at(f'Width: {screen.width}', 0, screen.height - 1, colour=7)

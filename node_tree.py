@@ -25,6 +25,12 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
     def is_root(self, _id: NodeId):
         return _id.id == self.root_node.id
 
+    def is_only_descendant_of_root(self, _id: NodeId):
+        ancestors = self.tree.get_ancestors(_id)
+        assert self.root_node in ancestors, 'Assume that this node is a descendant'
+        # The first index is always `_id`, so check the second index
+        return ancestors[1] == self.root_node and len(self.tree.get_children(self.root_node)) == 1
+
     def get_depth(self, _id: NodeId):
         # return self.tree.get_depth_relative_to(_id, self.root_node)
         assert self.root_node.id == consts.ROOT_NODE_ID, 'Have\'nt properly implemented root node yet'

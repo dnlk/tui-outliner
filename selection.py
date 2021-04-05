@@ -35,13 +35,13 @@ class Selection:
         if node.expanded and (first_child_id := self.node_tree.tree.get_first_child(node_id)):
             return first_child_id
 
-        # Otherwise, get the first parent with a sibling
-        while node_id not in (self.node_tree.root_node, None):
-            if next_node := self.node_tree.tree.get_next_sibling(node_id):
-                return next_node
-            node_id = self.node_tree.tree.get_parent(node_id)
+        # Otherwise, get the next sibling or first parent with a sibling
+        return self.node_tree.tree.get_next_uncle(node_id)
 
-        return self._selected_node_id
+
+    def get_next_non_descendant_node(self) -> Optional[NodeId]:
+        node_id = self.selected_node_id
+        return self.node_tree.tree.get_next_uncle(node_id)
 
     def get_previous_node(self) -> Optional[NodeId]:
         node_id = self.selected_node_id
@@ -53,8 +53,6 @@ class Selection:
                 return previous_node
         elif (parent_node := self.node_tree.tree.get_parent(node_id)) not in (self.node_tree.root_node, None):
             return parent_node
-
-        return node_id
 
     def select_next_node(self):
         if next_node := self.get_next_node():

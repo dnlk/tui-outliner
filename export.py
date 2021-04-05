@@ -1,11 +1,12 @@
 
+import os
 import sys
 from typing import List, Tuple
 
 import consts
 import db
 from enums import TreeLink
-from node_types import NodeId, IdType
+from node_types import NodeId
 
 
 def export_nodes(root_id, filename):
@@ -21,6 +22,8 @@ def export_nodes(root_id, filename):
 
 def import_nodes(filename, output_db_path):
     root_id = consts.ROOT_NODE_ID
+    if os.path.exists(output_db_path):
+        os.remove(output_db_path)
     conn = db.create_connection(output_db_path)
     db.initialize_db(conn)
 
@@ -63,4 +66,4 @@ def import_nodes(filename, output_db_path):
 if __name__ == '__main__':
     export_filepath = sys.argv[1]
     # export_nodes(1, export_filepath)
-    import_nodes(export_filepath, '_temp_db.sqlite')
+    import_nodes(export_filepath, 'db/db.sqlite')

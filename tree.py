@@ -93,7 +93,7 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
     def get_ancestors(self, _id: Id) -> List[Id]:
         return func.iterate(
             func=self.get_parent,
-            exit_condition=lambda id_it: id_it is not None,
+            exit_condition=lambda id_it: id_it is None,
             initial_value=_id,
             include_first=True,
             include_last=False
@@ -105,6 +105,16 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
 
     def get_next_sibling(self, _id: Id) -> Id:
         return self.get_next(_id, TreeLink.Sibling)
+
+    def get_next_uncle(self, _id: Id) -> Optional[Id]:
+        """
+        Funny method name. It tries to find the next sibling. Failing that, the parent's next sibling. Failing that,
+        the grandparent's next sibling. Etc.
+        """
+        ancestors = self.get_ancestors(_id)
+        for ancestor in ancestors:
+            if next_sibling := self.get_next_sibling(ancestor):
+                return next_sibling
 
     def get_previous_sibling(self, _id: Id) -> Id:
         previous = self.get_previous(_id)
@@ -197,6 +207,10 @@ class NodeTree(Generic[Id, Node]):
     def insert_node(self, node_context: NodeContext):
         self.add_orphan_node(node_context.id, node_context.node)
         self.tree.move_after(node_context.id, node_context.previous_id, node_context.link_type)
+
+    def delete_node(self, _id: Id):
+        self.tree.splice(_id)
+        self.nodes.pop(_id)
 
     def print_tree(self, _id, left_padding=''):
         node = self.nodes[_id]

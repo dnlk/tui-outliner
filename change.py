@@ -96,6 +96,11 @@ class SetNodeText:
     text: str
 
 
+@dataclass
+class DeleteNode:
+    node_id: NodeId
+
+
 Change = Union[NodeChange, NewNodeNextSibling, NewSelection, MoveNode, AddCharacter, SetCursor]
 
 

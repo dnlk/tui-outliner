@@ -31,6 +31,7 @@ class ChangeHandler:
                 self.ui_state.node_edit.set_node(self.selection.selected_node_id, self._get_selected_node())
             self.ui_state.mode = change.mode
         elif isinstance(change, ch.NewSelection):
+            assert change.node_id is not None
             self.selection.selected_node_id = change.node_id
         elif isinstance(change, ch.NewNodeNextSibling):
             node_context = NodeContext(
@@ -63,5 +64,10 @@ class ChangeHandler:
             )
             self.conn.commit()
             node.text = change.text
+        elif isinstance(change, ch.DeleteNode):
+            self.node_tree.delete_node(change.node_id)
+            db.delete_node(self.conn.cursor(), change.node_id)
+            self.conn.commit()
+            self.ui_state.refresh_screen()
         else:
             print(f'Unhandled change: {change}')

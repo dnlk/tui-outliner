@@ -83,3 +83,13 @@ class RemoveCharacterAtCursor(Action):
 @dataclass
 class FinishEditing(Action):
     pass
+
+
+@dataclass
+class DeleteSelectedNodeAndSelectNext(Action):
+    pass
+
+
+@dataclass
+class DeleteSelectedNodeAndSelectPrevious(Action):
+    pass

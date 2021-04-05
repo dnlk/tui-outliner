@@ -31,11 +31,11 @@ class ActionToChange:
         if action.is_type(act.ChangeMode):
             changes.append(ch.ChangeMode(action.mode))
         elif action.is_type(act.NavigateUp):
-            new_selected_node = self.selection.get_previous_node()
-            changes.append(ch.NewSelection(new_selected_node))
+            if new_selected_node := self.selection.get_previous_node():
+                changes.append(ch.NewSelection(new_selected_node))
         elif action.is_type(act.NavigateDown):
-            new_selected_node = self.selection.get_next_node()
-            changes.append(ch.NewSelection(new_selected_node))
+            if new_selected_node := self.selection.get_next_node():
+                changes.append(ch.NewSelection(new_selected_node))
         elif action.is_type(act.NewNodeNextSibling):
             new_node_id = nd.get_next_available_temp_id()
             changes.append(ch.NewNodeNextSibling(new_node_id, self.selection.selected_node_id))
@@ -91,7 +91,25 @@ class ActionToChange:
 
             cursor = self.node_edit.text_editor.cursor
             changes.append(ch.RemoveCharacter(cursor))
+        elif (action.is_type(act.DeleteSelectedNodeAndSelectNext) or
+              action.is_type(act.DeleteSelectedNodeAndSelectPrevious)):
+            selected_node = self.selection.selected_node_id
+            if not self.node_tree.is_only_descendant_of_root(selected_node):
+                changes.append(ch.DeleteNode(selected_node))
 
+                if action.is_type(act.DeleteSelectedNodeAndSelectNext):
+                    first_selection_attempt = self.selection.get_next_non_descendant_node
+                    second_selection_attempt = self.selection.get_previous_node
+                else:
+                    first_selection_attempt = self.selection.get_previous_node
+                    second_selection_attempt = self.selection.get_next_non_descendant_node
+
+                if next_selected_node := first_selection_attempt():
+                    changes.append(ch.NewSelection(next_selected_node))
+                elif prev_selected_node := second_selection_attempt():
+                    changes.append(ch.NewSelection(prev_selected_node))
+                else:
+                    assert False, 'Failed to determine next or previous selection'
         else:
             print(f'Unhandled action: {action}')
 
