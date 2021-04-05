@@ -7,6 +7,7 @@ from edit import Edit
 from enums import TreeLink, Mode
 import node as nd
 from node_tree import NodeTree
+from ui import UIState
 from selection import Selection
 
 
@@ -20,11 +21,12 @@ class ActionToChange:
 
     node_edit: Edit
 
-    def __init__(self, node_tree: NodeTree, selection: Selection, node_edit: Edit, screen):
+    def __init__(self, node_tree: NodeTree, selection: Selection, node_edit: Edit, screen, ui_state: UIState):
         self.node_tree = node_tree
         self.selection = selection
         self.node_edit = node_edit
         self.screen = screen
+        self.ui_state = ui_state
 
     def determine_changes(self, action) -> ChangeAction:
         changes = []
@@ -70,13 +72,11 @@ class ActionToChange:
             new_cursor = self.node_edit.text_editor.calculate_cursor.get_decr_cursor()
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.CursorRowIncrement):
-            node_depth = self.node_tree.get_depth(self.selection.selected_node_id)
-            remaining_width = self.screen.remaining_width_for_node_depth(node_depth)
+            remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
             new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_incr_row(remaining_width)
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.CursorRowDecrement):
-            node_depth = self.node_tree.get_depth(self.selection.selected_node_id)
-            remaining_width = self.screen.remaining_width_for_node_depth(node_depth)
+            remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
             new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.RemoveCharacterBeforeCursor):
@@ -114,3 +114,4 @@ class ActionToChange:
             print(f'Unhandled action: {action}')
 
         return ChangeAction(changes, action)
+

@@ -10,6 +10,12 @@ class Draw:
         self.selection = selection
         self.node_edit = node_edit
         self.width = width
+        self.previous_line_number = 0
+
+    def draw_blank_line(self, line_number, bg_color):
+        self.screen.screen_api.print_at(
+            ' ' * self.width, 0, line_number, colour=7, bg=bg_color
+        )
 
     def __draw_node(self, node_id, node, left_margin, line_number, mode):
 
@@ -30,9 +36,7 @@ class Draw:
             node_text = node.text
 
         for i in range(0, max(1, len(node_text)), remaining_width):
-            self.screen.screen_api.print_at(
-                ' ' * self.width, 0, line_number, colour=7, bg=bg_color
-            )
+            self.draw_blank_line(line_number, bg_color)
 
             if i == 0:
                 left_padding = '* '
@@ -81,5 +85,11 @@ class Draw:
 
         for child_id in tree.tree.get_children(node_id):
             line_number = self.__draw_node_tree(tree, child_id, 0, line_number, mode)
+
+        # Blank out any lines at the bottom that were previously drawn, as can happen e.g. when nodes are deleted
+        blank_line_bg_color = self.screen.screen_api.COLOUR_BLACK
+        for excess_line_number in range(line_number, self.previous_line_number):
+            self.draw_blank_line(excess_line_number, blank_line_bg_color)
+        self.previous_line_number = line_number
 
         self.screen.screen_api.refresh()

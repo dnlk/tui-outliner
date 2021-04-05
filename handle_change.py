@@ -68,6 +68,5 @@ class ChangeHandler:
             self.node_tree.delete_node(change.node_id)
             db.delete_node(self.conn.cursor(), change.node_id)
             self.conn.commit()
-            self.ui_state.refresh_screen()
         else:
             print(f'Unhandled change: {change}')

@@ -93,7 +93,7 @@ async def action_event_loop(
     screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
 
     action_events = ActionEventAsync(ui_state)
-    action_to_change = ActionToChange(node_tree, ui_state.selection, ui_state.node_edit, screen)
+    action_to_change = ActionToChange(node_tree, ui_state.selection, ui_state.node_edit, screen, ui_state)
 
     while True:
         next_action = await action_events.next_action()
@@ -139,12 +139,14 @@ async def main():
     selection = Selection(node_tree)
     selection.selected_node_id = node_tree.first_node
     node_edit = Edit()
-    ui_state = UIState(enums.Mode.Navigate, selection, node_edit)
-    ui_state.mode = enums.Mode.Navigate
+
 
     with ManagedScreen() as _screen:
 
         screen = Screen(_screen)
+
+        ui_state = UIState(enums.Mode.Navigate, selection, node_edit, node_tree, screen)
+        ui_state.mode = enums.Mode.Navigate
 
         change_handler = ChangeHandler(node_tree, selection, ui_state, screen, conn)
 
