@@ -18,6 +18,9 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
         self.root_node = NodeId(consts.ROOT_NODE_ID)
         super().__init__(*args, **kwargs)
 
+    def set_root_node(self, _id: NodeId):
+        self.root_node = _id
+
     @property
     def first_node(self) -> NodeId:
         return self.tree.get_first_child(self.root_node)
@@ -32,13 +35,8 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
         return ancestors[1] == self.root_node and len(self.tree.get_children(self.root_node)) == 1
 
     def get_depth(self, _id: NodeId):
-        assert self.root_node.id == consts.ROOT_NODE_ID, 'Have\'nt properly implemented root node yet'
-        ancestors = self.tree.get_ancestors(_id)
+        return self.tree.get_depth_relative_to(_id, self.root_node)
 
-        # The ancestors are expected to be [_id, <actual_ancestors>..., self.root_node]. We want to only count the
-        # actual ancestors.
-        assert len(ancestors) >= 2
-        return len(ancestors) - 2
 
 #
 # class NodeTreeChange:

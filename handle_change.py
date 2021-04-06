@@ -33,16 +33,16 @@ class ChangeHandler:
         elif isinstance(change, ch.NewSelection):
             assert change.node_id is not None
             self.selection.selected_node_id = change.node_id
-        elif isinstance(change, ch.NewNodeNextSibling):
+        elif isinstance(change, ch.InsertNewNodeAfter):
             node_context = NodeContext(
-                change.id,
+                change.node_id,
                 NodeData(),
                 change.previous_id,
-                TreeLink.Sibling,
+                change.link_type,
             )
             self.node_tree.insert_node(node_context)
 
-            db.create_node_after_as_sibling(self.conn.cursor(), change.id, change.previous_id)
+            db.create_node_after(self.conn.cursor(), change.node_id, change.previous_id, change.link_type)
             self.conn.commit()
         elif isinstance(change, ch.MoveNode):
             self.node_tree.tree.move_after(change.id, change.previous_node_id, change.link_type)
@@ -68,5 +68,7 @@ class ChangeHandler:
             self.node_tree.delete_node(change.node_id)
             db.delete_node(self.conn.cursor(), change.node_id)
             self.conn.commit()
+        elif isinstance(change, ch.SetRootNode):
+            self.node_tree.root_node = change.node_id
         else:
             print(f'Unhandled change: {change}')

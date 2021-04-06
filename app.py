@@ -126,7 +126,7 @@ class Screen:
         return self.screen_api.height
 
     def remaining_width_for_node_depth(self, depth: int):
-        return self.width - (2 * depth + 2)
+        return self.width - (2 * depth)
 
 
 async def main():

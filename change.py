@@ -8,15 +8,11 @@ from node_types import NodeId, PreviousNode
 from text_editor import Cursor
 
 
-# @dataclass
-# class NewNode:
-#     id: NodeId
-#     previous_node: PreviousNode
-
 @dataclass
-class NewNodeNextSibling:
-    id: NodeId
+class InsertNewNodeAfter:
+    node_id: NodeId
     previous_id: NodeId
+    link_type: TreeLink
 
 
 @dataclass
@@ -101,7 +97,12 @@ class DeleteNode:
     node_id: NodeId
 
 
-Change = Union[NodeChange, NewNodeNextSibling, NewSelection, MoveNode, AddCharacter, SetCursor]
+@dataclass
+class SetRootNode:
+    node_id: NodeId
+
+
+Change = Union[NodeChange, InsertNewNodeAfter, NewSelection, MoveNode, AddCharacter, SetCursor]
 
 
 

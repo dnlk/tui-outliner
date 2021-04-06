@@ -120,14 +120,10 @@ def _get_next_node_id(cursor, node_id: NodeId, link_type: TreeLink):
         return row[0]
 
 
-def _get_next_sibling(cursor, node_id: NodeId):
-    return _get_next_node_id(cursor, node_id, TreeLink.Sibling)
-
-
 def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
-    query_switch_previous_node = """
+    query_switch_previous_node = f"""
         UPDATE node
-        SET previous_node_id=?2, previous_node_link=?3
+        SET previous_node_id=?2, previous_node_link={link_type}
         WHERE id=?1
     """
 
@@ -137,20 +133,19 @@ def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, l
         [
             node_id,
             previous_sibling_id,
-            link_type,
         ]
     )
     return
 
 
-def create_node_after_as_sibling(cursor, node_id: NodeId, previous_sibling_id: NodeId):
+def create_node_after(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
 
-    create_node(cursor, node_id, SWAP_ID, TreeLink.Sibling)
+    create_node(cursor, node_id, SWAP_ID, link_type)
 
-    if next_sibling_id := _get_next_sibling(cursor, previous_sibling_id):
-        switch_previous_node(cursor, next_sibling_id, node_id, TreeLink.Sibling)
+    if next_id := _get_next_node_id(cursor, previous_sibling_id, link_type):
+        switch_previous_node(cursor, next_id, node_id, TreeLink.Sibling)
 
-    switch_previous_node(cursor, node_id, previous_sibling_id, TreeLink.Sibling)
+    switch_previous_node(cursor, node_id, previous_sibling_id, link_type)
 
 
 def _splice_node(cursor, node_id: NodeId):

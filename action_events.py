@@ -34,6 +34,10 @@ class ActionEventAsync:
             return actions.DeleteSelectedNodeAndSelectNext()
         elif key_event == Key.BACK:
             return actions.DeleteSelectedNodeAndSelectPrevious()
+        elif key_event == (Key.RIGHT, Control):
+            return actions.DiveIntoSelectedNode()
+        elif key_event == (Key.LEFT, Control):
+            return actions.ClimbOutOfNode()
         else:
             print(f'Unhandled key event: {key_event}')
 

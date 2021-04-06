@@ -103,3 +103,13 @@ class MoveSelectedNodeUp(Action):
 @dataclass
 class MoveSelectedNodeDown(Action):
     pass
+
+
+@dataclass
+class DiveIntoSelectedNode(Action):
+    pass
+
+
+@dataclass
+class ClimbOutOfNode(Action):
+    pass

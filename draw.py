@@ -1,7 +1,9 @@
 
 import enums
 
+import consts
 from edit import Edit
+from node_types import NodeId
 
 
 class Draw:
@@ -80,8 +82,34 @@ class Draw:
 
         return line_number
 
+    def __draw_header(self, tree, line_number):
+        if tree.root_node == NodeId(consts.ROOT_NODE_ID):
+            header_text = 'ROOT'
+        else:
+            header_text = tree.get_node(tree.root_node).text
+            if len(header_text) >= self.screen.width:
+                header_text = header_text[:self.screen.width - 3] + '...'
+
+        bg_color = self.screen.screen_api.COLOUR_BLACK
+        self.draw_blank_line(line_number, bg_color)
+        self.screen.screen_api.print_at(
+            header_text, 0, line_number, colour=7, bg=bg_color
+        )
+        line_number += 1
+
+        self.draw_blank_line(line_number, bg_color)
+        divider_text = '-' * len(header_text)
+        self.screen.screen_api.print_at(
+            divider_text, 0, line_number, colour=7, bg=bg_color
+        )
+        line_number += 1
+
+        return line_number
+
     def draw_node_tree(self, tree, node_id, mode):
         line_number = 0
+
+        line_number = self.__draw_header(tree, line_number)
 
         for child_id in tree.tree.get_children(node_id):
             line_number = self.__draw_node_tree(tree, child_id, 0, line_number, mode)

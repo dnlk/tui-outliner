@@ -54,7 +54,7 @@ class ActionToChange:
                 changes.append(ch.MoveNode(node_id, next_node_id, link_type))
         elif action.is_type(act.NewNodeNextSibling):
             new_node_id = nd.get_next_available_temp_id()
-            changes.append(ch.NewNodeNextSibling(new_node_id, self.selection.selected_node_id))
+            changes.append(ch.InsertNewNodeAfter(new_node_id, self.selection.selected_node_id, TreeLink.Sibling))
             changes.append(ch.NewSelection(new_node_id))
         elif action.is_type(act.TabNode):
             selected_node_id = self.selection.selected_node_id
@@ -124,8 +124,22 @@ class ActionToChange:
                     changes.append(ch.NewSelection(prev_selected_node))
                 else:
                     assert False, 'Failed to determine next or previous selection'
+        elif action.is_type(act.DiveIntoSelectedNode):
+            changes.append(ch.SetRootNode(self.selected_id))
+            if not (first_child_id := self.node_tree.tree.get_first_child(self.selected_id)):
+                first_child_id = nd.get_next_available_temp_id()
+                changes.append(ch.InsertNewNodeAfter(first_child_id, self.selected_id, TreeLink.Parent))
+            changes.append(ch.NewSelection(first_child_id))
+        elif action.is_type(act.ClimbOutOfNode):
+            if parent_id := self.node_tree.tree.get_parent(self.node_tree.root_node):
+                changes.append(ch.SetRootNode(parent_id))
+                changes.append(ch.NewSelection(self.node_tree.root_node))
         else:
             print(f'Unhandled action: {action}')
 
         return ChangeAction(changes, action)
+
+    @property
+    def selected_id(self):
+        return self.selection.selected_node_id
 
