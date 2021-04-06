@@ -131,6 +131,18 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
         if children:
             return children[-1]
 
+    def get_last_descendants(self, _id):
+        """
+        return [_id, <_id's last child>, <id's last child's child>, etc]
+        """
+        return func.iterate(
+            func=self.get_last_child,
+            exit_condition=lambda _id: _id is None,
+            initial_value=_id,
+            include_first=True,
+            include_last=False
+        )
+
     def insert_after(self, _id: Id, previous_id: Id, link_type: Link) -> None:
         bumped_link_type = TreeLink.Sibling
         self._insert_after(_id, previous_id, link_type, bumped_link_type)

@@ -113,3 +113,8 @@ class DiveIntoSelectedNode(Action):
 @dataclass
 class ClimbOutOfNode(Action):
     pass
+
+
+@dataclass
+class ToggleNodeExpanded(Action):
+    pass

@@ -70,5 +70,9 @@ class ChangeHandler:
             self.conn.commit()
         elif isinstance(change, ch.SetRootNode):
             self.node_tree.root_node = change.node_id
+        elif isinstance(change, ch.SetExpanded):
+            self.node_tree.set_expanded(change.node_id, change.expanded)
+            db.update_node_expanded(self.conn.cursor(), change.node_id, change.expanded)
+            self.conn.commit()
         else:
             print(f'Unhandled change: {change}')

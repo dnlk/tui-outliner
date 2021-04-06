@@ -238,6 +238,15 @@ def update_node_text(cursor, node_id, text):
     result = run_query(cursor, query, [text, node_id])
 
 
+def update_node_expanded(cursor, node_id: NodeId, expanded: bool):
+    query = f"""
+        UPDATE node
+        SET expanded={expanded}
+        WHERE id=?1
+    """
+    result = run_query(cursor, query, [node_id])
+
+
 def depth_first_traversal(cursor, root_id, callback):
 
     traversal_query = """

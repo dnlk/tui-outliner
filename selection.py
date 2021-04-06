@@ -45,12 +45,13 @@ class Selection:
 
     def get_previous_node(self) -> Optional[NodeId]:
         node_id = self.selected_node_id
-        if previous_sibling := self.node_tree.tree.get_previous_sibling(node_id):
-            if not self.node_tree.is_root(previous_sibling):
-                previous_node = previous_sibling
-                while last_child := self.node_tree.tree.get_last_child(previous_node):
-                    previous_node = last_child
-                return previous_node
+        if previous_sibling_id := self.node_tree.tree.get_previous_sibling(node_id):
+            last_child_id = None
+            for last_child_id in self.node_tree.tree.get_last_descendants(previous_sibling_id):
+                if not self.node_tree.is_expanded(last_child_id):
+                    return last_child_id
+            else:
+                return last_child_id
         elif (parent_node := self.node_tree.tree.get_parent(node_id)) not in (self.node_tree.root_node, None):
             return parent_node
 

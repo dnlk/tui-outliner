@@ -19,7 +19,7 @@ class Draw:
             ' ' * self.width, 0, line_number, colour=7, bg=bg_color
         )
 
-    def __draw_node(self, node_id, node, left_margin, line_number, mode):
+    def __draw_node(self, node_id, node, left_margin, line_number, mode, has_children):
 
         if self.selection.is_selected(node_id):
             bg_color = self.screen.screen_api.COLOUR_CYAN
@@ -41,7 +41,12 @@ class Draw:
             self.draw_blank_line(line_number, bg_color)
 
             if i == 0:
-                left_padding = '* '
+                if not has_children:
+                    left_padding = '* '
+                elif node.expanded:
+                    left_padding = '- '
+                else:
+                    left_padding = '+ '
             else:
                 left_padding = '  '
 
@@ -71,14 +76,14 @@ class Draw:
         return line_number
 
     def __draw_node_tree(self, tree, node_id, left_margin, line_number, mode):
-
         node = tree.get_node(node_id)
-        child_ids = tree.tree.get_children(node_id)
+        children = tree.tree.get_children(node_id)
 
-        line_number = self.__draw_node(node_id, node, left_margin, line_number, mode)
+        line_number = self.__draw_node(node_id, node, left_margin, line_number, mode, bool(children))
 
-        for child_id in child_ids:
-            line_number = self.__draw_node_tree(tree, child_id, left_margin + 2, line_number, mode)
+        if node.expanded:
+            for child_id in children:
+                line_number = self.__draw_node_tree(tree, child_id, left_margin + 2, line_number, mode)
 
         return line_number
 

@@ -45,27 +45,29 @@ class ActionToChange:
                     prev_prev_id, prev_prev_link = prev_prev
                     changes.append(ch.MoveNode(node_id, prev_prev_id, prev_prev_link))
         elif action.is_type(act.MoveSelectedNodeDown):
-            node_id = self.selection.selected_node_id
             if next_node_id := self.selection.get_next_non_descendant_node():
-                if self.node_tree.tree.get_first_child(next_node_id):
+                if self.node_tree.is_expanded(next_node_id) and self.node_tree.tree.get_first_child(next_node_id):
                     link_type = TreeLink.Parent
                 else:
                     link_type = TreeLink.Sibling
-                changes.append(ch.MoveNode(node_id, next_node_id, link_type))
+                changes.append(ch.MoveNode(self.selected_id, next_node_id, link_type))
         elif action.is_type(act.NewNodeNextSibling):
             new_node_id = nd.get_next_available_temp_id()
             changes.append(ch.InsertNewNodeAfter(new_node_id, self.selection.selected_node_id, TreeLink.Sibling))
             changes.append(ch.NewSelection(new_node_id))
         elif action.is_type(act.TabNode):
-            selected_node_id = self.selection.selected_node_id
+            selected_node_id = self.selected_id
             if previous := self.node_tree.tree.get_previous(selected_node_id):
                 previous_id, link_type = previous
                 if link_type == TreeLink.Sibling:
+                    if not self.node_tree.is_expanded(previous_id):
+                        changes.append(ch.SetExpanded(previous_id, True))
                     last_child_of_sibling = self.node_tree.tree.get_last_child(previous_id)
                     if last_child_of_sibling:
                         changes.append(ch.MoveNode(selected_node_id, last_child_of_sibling, TreeLink.Sibling))
                     else:
                         changes.append(ch.MoveNode(selected_node_id, previous_id, TreeLink.Parent))
+
         elif action.is_type(act.UntabNode):
             selected_node_id = self.selection.selected_node_id
             if parent_id := self.node_tree.tree.get_parent(selected_node_id):
@@ -134,6 +136,8 @@ class ActionToChange:
             if parent_id := self.node_tree.tree.get_parent(self.node_tree.root_node):
                 changes.append(ch.SetRootNode(parent_id))
                 changes.append(ch.NewSelection(self.node_tree.root_node))
+        elif action.is_type(act.ToggleNodeExpanded):
+            changes.append(ch.SetExpanded(self.selected_id, not self.selected_node.expanded))
         else:
             print(f'Unhandled action: {action}')
 
@@ -142,4 +146,9 @@ class ActionToChange:
     @property
     def selected_id(self):
         return self.selection.selected_node_id
+
+
+    @property
+    def selected_node(self):
+        return self.node_tree.get_node(self.selected_id)
 

@@ -102,6 +102,12 @@ class SetRootNode:
     node_id: NodeId
 
 
+@dataclass
+class SetExpanded:
+    node_id: NodeId
+    expanded: bool
+
+
 Change = Union[NodeChange, InsertNewNodeAfter, NewSelection, MoveNode, AddCharacter, SetCursor]
 
 

@@ -18,6 +18,9 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
         self.root_node = NodeId(consts.ROOT_NODE_ID)
         super().__init__(*args, **kwargs)
 
+    def get_node(self, _id: NodeId):
+        return super().get_node(_id)
+
     def set_root_node(self, _id: NodeId):
         self.root_node = _id
 
@@ -37,8 +40,13 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
     def get_depth(self, _id: NodeId):
         return self.tree.get_depth_relative_to(_id, self.root_node)
 
+    def set_expanded(self, _id: NodeId, expanded: bool):
+        self.get_node(_id).expanded = expanded
 
+    def is_expanded(self, _id: NodeId):
+        return self.get_node(_id).expanded
 #
+
 # class NodeTreeChange:
 #     node_tree: NodeTree
 #
