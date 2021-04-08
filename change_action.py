@@ -6,6 +6,7 @@ import change as ch
 from edit import Edit
 from enums import TreeLink, Mode
 import node as nd
+from node_path import BreadCrumb
 from node_tree import NodeTree
 from ui import UIState
 from selection import Selection
@@ -132,10 +133,20 @@ class ActionToChange:
                 first_child_id = nd.get_next_available_temp_id()
                 changes.append(ch.InsertNewNodeAfter(first_child_id, self.selected_id, TreeLink.Parent))
             changes.append(ch.NewSelection(first_child_id))
+
+            node_path = self.ui_state.node_path
+            relative_path = self.node_tree.tree.get_ancestors_relative_to(self.selected_id, self.node_tree.root_node)
+            relative_path.reverse()
+            breadcrumb = BreadCrumb(self.node_tree.root_node, self.selected_id)
+            node_path.push(breadcrumb, relative_path)
+            changes.append(ch.SetNodePath(node_path))
         elif action.is_type(act.ClimbOutOfNode):
-            if parent_id := self.node_tree.tree.get_parent(self.node_tree.root_node):
-                changes.append(ch.SetRootNode(parent_id))
-                changes.append(ch.NewSelection(self.node_tree.root_node))
+            node_path = self.ui_state.node_path
+            if node_path.breadcrumbs:
+                breadcrumb = node_path.pop()
+                changes.append(ch.SetRootNode(breadcrumb.root_node_id))
+                changes.append(ch.NewSelection(breadcrumb.selected_node_id))
+                changes.append(ch.SetNodePath(node_path))
         elif action.is_type(act.ToggleNodeExpanded):
             changes.append(ch.SetExpanded(self.selected_id, not self.selected_node.expanded))
         else:

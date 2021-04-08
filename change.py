@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Tuple, Union, TypeVar, Optional, Dict, Any
 
 from enums import Mode, TreeLink
+from node_path import NodePath
 from node_types import NodeId, PreviousNode
 from text_editor import Cursor
 
@@ -106,6 +107,11 @@ class SetRootNode:
 class SetExpanded:
     node_id: NodeId
     expanded: bool
+
+
+@dataclass
+class SetNodePath:
+    node_path: NodePath
 
 
 Change = Union[NodeChange, InsertNewNodeAfter, NewSelection, MoveNode, AddCharacter, SetCursor]

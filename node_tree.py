@@ -17,6 +17,11 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
     def __init__(self, *args, **kwargs):
         self.root_node = NodeId(consts.ROOT_NODE_ID)
         super().__init__(*args, **kwargs)
+        self.nodes[self.root_node] = NodeData(
+            type=0,
+            text=consts.ROOT_NODE_TEXT,
+            expanded=True
+        )
 
     def get_node(self, _id: NodeId):
         return super().get_node(_id)

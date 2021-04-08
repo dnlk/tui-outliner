@@ -1,16 +1,21 @@
 
 import enums
+from typing import *
 
-import consts
+from asciimatics import screen
+
 from edit import Edit
-from node_types import NodeId
+from ui import UIState
+
+BG_COLOR = screen.Screen.COLOUR_BLACK
 
 
 class Draw:
-    def __init__(self, screen, selection, node_edit: Edit, width: int):
+    def __init__(self, screen, selection, node_edit: Edit, ui_state: UIState, width: int):
         self.screen = screen
         self.selection = selection
         self.node_edit = node_edit
+        self.ui_state = ui_state
         self.width = width
         self.previous_line_number = 0
 
@@ -87,28 +92,54 @@ class Draw:
 
         return line_number
 
-    def __draw_header(self, tree, line_number):
-        if tree.root_node == NodeId(consts.ROOT_NODE_ID):
-            header_text = 'ROOT'
+    @staticmethod
+    def __clamp_breadcrumb_part_text(s):
+        if len(s) > 15:
+            return s[:15] + '...'
         else:
-            header_text = tree.get_node(tree.root_node).text
-            if len(header_text) >= self.screen.width:
-                header_text = header_text[:self.screen.width - 3] + '...'
+            return s
 
-        bg_color = self.screen.screen_api.COLOUR_BLACK
-        self.draw_blank_line(line_number, bg_color)
+    def __get_breadcrumbs_text(self, tree) -> Optional[str]:
+        if self.ui_state.node_path.breadcrumbs:
+            breadcrumb_nodes = self.ui_state.node_path.get_breadcrumb_path()
+            breadcrumb_text = ' > '.join(self.__clamp_breadcrumb_part_text(tree.get_node(bc_id).text) for bc_id in breadcrumb_nodes)
+
+            if len(breadcrumb_text) > self.screen.width:
+                num_chars_display = self.screen.width - 3  # 3 for the '...' elipsis
+                breadcrumb_text = '...' + breadcrumb_text[-num_chars_display:]
+
+            return breadcrumb_text
+
+    def __draw_divider(self, width: int, line_number) -> int:
+        self.draw_blank_line(line_number, BG_COLOR)
+        divider_text = '-' * width
         self.screen.screen_api.print_at(
-            header_text, 0, line_number, colour=7, bg=bg_color
+            divider_text, 0, line_number, colour=7, bg=BG_COLOR
         )
-        line_number += 1
+        return line_number + 1
 
-        self.draw_blank_line(line_number, bg_color)
-        divider_text = '-' * len(header_text)
+    def __draw_breadcrumbs(self, tree, line_number) -> int:
+        if header_text := self.__get_breadcrumbs_text(tree):
+            self.draw_blank_line(line_number, BG_COLOR)
+            self.screen.screen_api.print_at(
+                header_text, 0, line_number, colour=7, bg=BG_COLOR
+            )
+            line_number += 1
+
+            line_number = self.__draw_divider(len(header_text), line_number)
+        return line_number
+
+    def __draw_root_node(self, tree, line_number) -> int:
+        self.draw_blank_line(line_number, BG_COLOR)
+        root_node_text = tree.get_node(tree.root_node).text
         self.screen.screen_api.print_at(
-            divider_text, 0, line_number, colour=7, bg=bg_color
+            root_node_text, 0, line_number, colour=7, bg=BG_COLOR
         )
-        line_number += 1
+        return line_number + 1
 
+    def __draw_header(self, tree, line_number):
+        line_number = self.__draw_breadcrumbs(tree, line_number)
+        line_number = self.__draw_root_node(tree, line_number)
         return line_number
 
     def draw_node_tree(self, tree, node_id, mode):

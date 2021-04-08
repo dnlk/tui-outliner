@@ -99,6 +99,12 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
             include_last=False
         )
 
+    def get_ancestors_relative_to(self, _id: Id, ancestor_id: Id) -> List[Id]:
+        ancestors = self.get_ancestors(_id)
+        index = ancestors.index(ancestor_id)
+        truncated_ancestors = ancestors[:index]
+        return truncated_ancestors
+
     def get_depth_relative_to(self, _id: Id, ancestor_id: Id) -> int:
         ancestors = self.get_ancestors(_id)
         return ancestors.index(ancestor_id)

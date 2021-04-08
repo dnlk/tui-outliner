@@ -87,7 +87,7 @@ async def action_event_loop(
     # while True:
     #     next_action = await action_events.next_action()
 
-    drawer = draw.Draw(screen, ui_state.selection, ui_state.node_edit, screen.width)
+    drawer = draw.Draw(screen, ui_state.selection, ui_state.node_edit, ui_state, screen.width)
 
     drawer.draw_node_tree(node_tree, node_tree.root_node, ui_state.mode)
     screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)

@@ -74,5 +74,7 @@ class ChangeHandler:
             self.node_tree.set_expanded(change.node_id, change.expanded)
             db.update_node_expanded(self.conn.cursor(), change.node_id, change.expanded)
             self.conn.commit()
+        elif isinstance(change, ch.SetNodePath):
+            self.ui_state.node_path = change.node_path
         else:
-            print(f'Unhandled change: {change}')
+            raise Exception(f'Unhandled change: {change}')
