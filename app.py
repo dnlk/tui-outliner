@@ -129,10 +129,11 @@ class Screen:
         return self.width - (2 * depth)
 
 
-async def main():
-    init_db.init_if_needed(consts.DB_PATH)
+async def main(db_path=None):
+    db_path = db_path or consts.DB_PATH
+    init_db.init_if_needed(db_path)
 
-    conn = db.create_connection(consts.DB_PATH)
+    conn = db.create_connection(db_path)
 
     all_nodes = db.get_all_nodes(conn.cursor())
     node_tree = NodeTree(all_nodes)
@@ -154,4 +155,12 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    import os
+    import sys
+
+    db_path = None
+    if len(sys.argv) > 1:
+        db_name = sys.argv[1]
+        db_path = os.path.join(consts.DB_DIR, db_name) + '.sqlite'
+
+    asyncio.run(main(db_path))
