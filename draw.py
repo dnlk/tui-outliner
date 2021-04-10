@@ -5,6 +5,7 @@ from typing import *
 from asciimatics import screen
 
 from edit import Edit
+from text_editor import TextFormat
 from ui import UIState
 
 BG_COLOR = screen.Screen.COLOUR_BLACK
@@ -34,15 +35,29 @@ class Draw:
         remaining_width = self.width - left_margin - 2
 
         if self.selection.is_selected(node_id) and mode == enums.Mode.EditNode:
-            if self.node_edit.text_editor.calculate_cursor.is_end():
-                # One extra space at the end to accommodate a cursor on an empty newline
-                node_text = self.node_edit.text_editor.get_data() + ' '
-            else:
-                node_text = self.node_edit.text_editor.get_data()
+            node_text = self.node_edit.text_editor.get_data()
         else:
             node_text = node.text
 
-        for i in range(0, max(1, len(node_text)), remaining_width):
+        formatted_text = TextFormat(node_text, remaining_width)
+        lines = formatted_text.get_lines()
+
+        # Show empty nodes with at least one blank line, with a space for the cursor
+        if not lines:
+            lines = [' ']
+
+        cursor_pos = None
+        if self.selection.is_selected(node_id) and mode == enums.Mode.EditNode:
+            cursor_pos = self.node_edit.text_editor.calculate_cursor.get_cursor_coord(remaining_width)
+            assert cursor_pos.y <= len(lines)
+
+            # Create an extra space char for the cursor
+            if cursor_pos.y == len(lines):
+                lines.append(' ')
+            else:
+                lines[cursor_pos.y] += ' '
+
+        for i, line in enumerate(lines):
             self.draw_blank_line(line_number, bg_color)
 
             if i == 0:
@@ -56,24 +71,20 @@ class Draw:
                 left_padding = '  '
 
             if self.selection.is_selected(node_id) and mode == enums.Mode.EditNode:
-                cursor_pos = self.node_edit.text_editor.calculate_cursor.get_cursor_coord(remaining_width)
-
-                text = node_text[i : i + remaining_width]
                 self.screen.screen_api.print_at(
-                    left_padding + text, left_margin, line_number, colour=7, bg=bg_color
+                    left_padding + line, left_margin, line_number, colour=7, bg=bg_color
                 )
 
-                if i / remaining_width == cursor_pos.y:
+                if i == cursor_pos.y:
                     cursor_x = left_margin + 2 + cursor_pos.x
-                    cursor_text = text[cursor_pos.x]
+                    cursor_text = line[cursor_pos.x]
 
                     self.screen.screen_api.print_at(
                         cursor_text, cursor_x, line_number, colour=0, attr=self.screen.screen_api.A_UNDERLINE, bg=self.screen.screen_api.COLOUR_WHITE
                     )
             else:
-                text = node_text[i : i + remaining_width]
                 self.screen.screen_api.print_at(
-                    left_padding + text, left_margin, line_number, colour=7, bg=bg_color
+                    left_padding + line, left_margin, line_number, colour=7, bg=bg_color
                 )
 
             line_number += 1

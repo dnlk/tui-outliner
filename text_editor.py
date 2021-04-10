@@ -10,6 +10,45 @@ class LinkedListNode:
     pass
 
 
+class TextFormat:
+    def __init__(self, text: str, width: int):
+        self.text = text
+        self.width = width
+
+    def next_line_start(self, start_offset: int):
+        max_end_offset = end_offset = start_offset + self.width
+
+        if len(self.text) <= max_end_offset:
+            end_offset = len(self.text)
+        elif self.text[max_end_offset] == ' ':
+            # Bump the offset by 1 the next line is "hidden"
+            end_offset = max_end_offset + 1
+        else:
+            for end_offset in range(max_end_offset, start_offset, -1):
+                chr_index = self.text[end_offset - 1]
+                if chr_index == ' ':
+                    break
+
+        return end_offset
+
+    def get_line_offsets(self):
+        return func.iterate(
+            func=self.next_line_start,
+            exit_condition=lambda offset: offset >= len(self.text),
+            initial_value=0,
+            include_first=True,
+            include_last=False
+        )
+
+    def get_lines(self) -> List[str]:
+        line_offsets = self.get_line_offsets()
+        return [
+            self.text[begin:end]
+            for begin, end
+            in zip(line_offsets, line_offsets[1:] + [len(self.text)])
+        ]
+
+
 class Paragraph:
 
     def __init__(self, text: str):
@@ -143,13 +182,38 @@ class CalculateCursor:
     def paragraphs(self) -> LinkedListParagraphs:
         return self.text_editor.paragraphs
 
-    def get_cursor_coord(self, width) -> Coord:
+    def get_cursor_coord(self, width: int) -> Coord:
         assert len(self.paragraphs) == 1  # This is quick and dirty for the case of 1 paragraph
 
-        return Coord(
-            x=self.cursor.offset % width,
-            y=self.cursor.offset // width
-        )
+        lines_offsets = TextFormat(self.paragraph.text, width).get_line_offsets()
+
+        prev_line_offset = 0
+        i = 0
+        for i, line_offset in enumerate(lines_offsets):
+            if line_offset > self.cursor.offset:
+                y = i - 1
+                break
+            prev_line_offset = line_offset
+        else:
+            y = i
+
+        x = self.cursor.offset - prev_line_offset
+
+        # The offset can be a bit wider than the width in a couple cases.
+        # (1) There is a space at the beginning of the next row, which is "hidden" by absorbing it into the previous row
+        # (2) If the cursor is at the end of the paragraph then it is one beyond the length of the actual text. If the
+        #     last row is full, then the cursos will be off the end by one.
+        if x >= width:
+            x = 0
+            y += 1
+
+        return Coord(x=x, y=y)
+
+    def get_offset_from_coord(self, width: int, coord: Coord) -> int:
+        line_offsets = TextFormat(self.paragraph.text, width).get_line_offsets()
+        assert coord.y < len(line_offsets)
+        new_offset = line_offsets[coord.y] + coord.x
+        return new_offset
 
     @property
     def paragraph(self) -> Paragraph:
@@ -195,29 +259,28 @@ class CalculateCursor:
         else:
             return self.cursor
 
-    def get_cursor_for_incr_row(self, width) -> Cursor:
-        if self.cursor.offset + width <= self.paragraph.num_chars():
-            return self.cursor.with_offset(self.cursor.offset + width)
-        elif next_paragraph_id := self.paragraphs.get_next(self.cursor.p_id):
-            current_column = self.cursor.offset % width
-            return Cursor(
-                next_paragraph_id,
-                min(current_column, self.paragraphs[next_paragraph_id].num_chars)
-            )
-        else:
+    def __get_corrected_cursor_for_coord(self, width: int, coord: Coord) -> Cursor:
+        lines = TextFormat(self.paragraph.text, width).get_lines()
+
+        if coord.y < 0:
+            return self.cursor.with_offset(0)
+        elif coord.y >= len(lines):
             return self.get_paragraph_end(self.cursor.p_id)
 
+        new_y = coord.y
+        new_x = min(coord.x, len(lines[new_y]))
+        new_offset = self.get_offset_from_coord(width, Coord(x=new_x, y=new_y))
+        return self.cursor.with_offset(new_offset)
+
+    def get_cursor_for_incr_row(self, width) -> Cursor:
+        coord_uncorrected = self.get_cursor_coord(width)
+        coord_uncorrected.y += 1
+        return self.__get_corrected_cursor_for_coord(width, coord_uncorrected)
+
     def get_cursor_for_decr_row(self, width) -> Cursor:
-        if self.cursor.offset >= width:
-            return self.cursor.with_offset(self.cursor.offset - width)
-        elif prev_paragraph_id := self.paragraphs.get_previous(self.cursor.p_id):
-            current_column = self.cursor.offset % width
-            return Cursor(
-                prev_paragraph_id,
-                min(current_column, self.paragraphs[prev_paragraph_id].num_chars)
-            )
-        else:
-            return self.get_paragraph_origin(self.cursor.p_id)
+        coord_uncorrected = self.get_cursor_coord(width)
+        coord_uncorrected.y -= 1
+        return self.__get_corrected_cursor_for_coord(width, coord_uncorrected)
 
 
 class TextEditor:
