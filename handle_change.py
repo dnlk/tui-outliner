@@ -1,8 +1,10 @@
 
+import globals as gls
+
 import change as ch
 from change_action import ChangeAction
 import db
-from enums import Mode,TreeLink
+from enums import Mode
 from node import NodeData
 from node_tree import NodeTree, NodeContext
 from selection import Selection
@@ -16,6 +18,19 @@ class ChangeHandler:
         self.ui_state = ui_state
         self.screen = screen
         self.conn = conn
+
+        gls.change_notifier.register(self, ch.ChangeMode)
+        gls.change_notifier.register(self, ch.NewSelection)
+        gls.change_notifier.register(self, ch.InsertNewNodeAfter)
+        gls.change_notifier.register(self, ch.MoveNode)
+        gls.change_notifier.register(self, ch.AddCharacter)
+        gls.change_notifier.register(self, ch.RemoveCharacter)
+        gls.change_notifier.register(self, ch.SetCursor)
+        gls.change_notifier.register(self, ch.SetNodeText)
+        gls.change_notifier.register(self, ch.DeleteNode)
+        gls.change_notifier.register(self, ch.SetRootNode)
+        gls.change_notifier.register(self, ch.SetExpanded)
+        gls.change_notifier.register(self, ch.SetNodePath)
 
     def _get_selected_node(self):
         if selected_node := self.selection.selected_node_id:

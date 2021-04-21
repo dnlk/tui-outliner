@@ -3,16 +3,19 @@ from copy import deepcopy
 from enums import Mode
 
 from edit import Edit
-from node_path import BreadCrumb, NodePath
+from node_tree import NodeTree
+from node_path import NodePath
+from selection import Selection
 
 
 class UIState:
     mode: Mode
     node_edit: Edit
     screen_needs_reset: bool = False
-    node_path: NodePath
+    selection: Selection
+    node_tree: NodeTree
 
-    def __init__(self, mode: Mode, selection, node_edit, node_tree, screen):
+    def __init__(self, mode: Mode, selection: Selection, node_edit: Edit, node_tree: NodeTree, screen):
         self.mode = mode
         self.selection = selection
         self.node_edit = node_edit

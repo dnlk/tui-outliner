@@ -1,26 +1,41 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, Union, TypeVar, Optional, Dict, Any
+from typing import *
 
 from enums import Mode, TreeLink
 from node_path import NodePath
-from node_types import NodeId, PreviousNode
+from node_types import NodeId
 from text_editor import Cursor
 
 
-@dataclass
-class InsertNewNodeAfter:
-    node_id: NodeId
-    previous_id: NodeId
-    link_type: TreeLink
+class Change:
+    def __hash__(self):
+        return self.__class__.__name__
 
 
-@dataclass
-class MoveNode:
-    id: NodeId
-    previous_node_id: NodeId
-    link_type: TreeLink
+class ChangeHandler(Protocol):
+    def handle_change(self, change: Change):
+        ...
+
+
+class ChangeNotifier:
+
+    def __init__(self):
+        self._handlers: Dict[Type[Change], ChangeHandler] = {}
+
+    def register(self, handler: ChangeHandler, change_type: Type[Change]):
+        assert change_type not in self._handlers
+        self._handlers[change_type] = handler
+
+    def notify(self, change: Change):
+        change_type = type(change)
+        assert change_type in self._handlers
+        self._handlers[change_type].handle_change(change)
+
+    def notify_changes(self, changes: List[Change]):
+        for ch in changes:
+            self.notify(ch)
 
 
 class ChangeType(Enum):
@@ -62,59 +77,72 @@ class NodeChange:
 
 
 @dataclass
-class NewSelection:
+class InsertNewNodeAfter(Change):
+    node_id: NodeId
+    previous_id: NodeId
+    link_type: TreeLink
+
+
+@dataclass
+class MoveNode(Change):
+    id: NodeId
+    previous_node_id: NodeId
+    link_type: TreeLink
+
+
+@dataclass
+class NewSelection(Change):
     node_id: NodeId
 
 
 @dataclass
-class ChangeMode:
+class ChangeMode(Change):
     mode: Mode
 
 
 @dataclass
-class AddCharacter:
+class AddCharacter(Change):
     cursor: Cursor
     char: str
 
 
 @dataclass
-class SetCursor:
+class SetCursor(Change):
     cursor: Cursor
 
 
 @dataclass
-class RemoveCharacter:
+class RemoveCharacter(Change):
     cursor: Cursor
 
 
 @dataclass
-class SetNodeText:
+class SetNodeText(Change):
     id: NodeId
     text: str
 
 
 @dataclass
-class DeleteNode:
+class DeleteNode(Change):
     node_id: NodeId
 
 
 @dataclass
-class SetRootNode:
+class SetRootNode(Change):
     node_id: NodeId
 
 
 @dataclass
-class SetExpanded:
+class SetExpanded(Change):
     node_id: NodeId
     expanded: bool
 
 
 @dataclass
-class SetNodePath:
+class SetNodePath(Change):
     node_path: NodePath
 
 
-Change = Union[NodeChange, InsertNewNodeAfter, NewSelection, MoveNode, AddCharacter, SetCursor]
-
-
-
+@dataclass
+class ScrollAdjust(Change):
+    scroll_diff: int

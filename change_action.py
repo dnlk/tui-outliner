@@ -30,7 +30,7 @@ class ActionToChange:
         self.ui_state = ui_state
 
     def determine_changes(self, action) -> ChangeAction:
-        changes = []
+        changes: List[ch.Change] = []
         if action.is_type(act.ChangeMode):
             changes.append(ch.ChangeMode(action.mode))
         elif action.is_type(act.NavigateUp):
@@ -149,6 +149,10 @@ class ActionToChange:
                 changes.append(ch.SetNodePath(node_path))
         elif action.is_type(act.ToggleNodeExpanded):
             changes.append(ch.SetExpanded(self.selected_id, not self.selected_node.expanded))
+        elif action.is_type(act.ScrollDown):
+            changes.append(ch.ScrollAdjust(1))
+        elif action.is_type(act.ScrollUp):
+            changes.append(ch.ScrollAdjust(-1))
         else:
             print(f'Unhandled action: {action}')
 
@@ -158,8 +162,6 @@ class ActionToChange:
     def selected_id(self):
         return self.selection.selected_node_id
 
-
     @property
     def selected_node(self):
         return self.node_tree.get_node(self.selected_id)
-

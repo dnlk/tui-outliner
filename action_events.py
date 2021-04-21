@@ -40,6 +40,10 @@ class ActionEventAsync:
             return actions.ClimbOutOfNode()
         elif key_event == Key.SPACE:
             return actions.ToggleNodeExpanded()
+        elif key_event == (Key.J):
+            return actions.ScrollDown()
+        elif key_event == (Key.K):
+            return actions.ScrollUp()
         else:
             print(f'Unhandled key event: {key_event}')
 

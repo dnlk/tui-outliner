@@ -118,3 +118,13 @@ class ClimbOutOfNode(Action):
 @dataclass
 class ToggleNodeExpanded(Action):
     pass
+
+
+@dataclass
+class ScrollDown(Action):
+    pass
+
+
+@dataclass
+class ScrollUp(Action):
+    pass

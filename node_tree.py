@@ -33,23 +33,25 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
     def first_node(self) -> NodeId:
         return self.tree.get_first_child(self.root_node)
 
-    def is_root(self, _id: NodeId):
+    def is_root(self, _id: NodeId) -> bool:
         return _id.id == self.root_node.id
 
-    def is_only_descendant_of_root(self, _id: NodeId):
+    def is_only_descendant_of_root(self, _id: NodeId) -> bool:
         ancestors = self.tree.get_ancestors(_id)
         assert self.root_node in ancestors, 'Assume that this node is a descendant'
         # The first index is always `_id`, so check the second index
         return ancestors[1] == self.root_node and len(self.tree.get_children(self.root_node)) == 1
 
-    def get_depth(self, _id: NodeId):
+    def get_depth(self, _id: NodeId) -> int:
         return self.tree.get_depth_relative_to(_id, self.root_node)
 
     def set_expanded(self, _id: NodeId, expanded: bool):
         self.get_node(_id).expanded = expanded
 
-    def is_expanded(self, _id: NodeId):
+    def is_expanded(self, _id: NodeId) -> bool:
         return self.get_node(_id).expanded
+
+
 #
 
 # class NodeTreeChange:
