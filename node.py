@@ -1,11 +1,9 @@
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from typing import *
 
 from node_types import NodeId, IdType, PreviousNodeType, PreviousNode
-
-import change
 
 
 @dataclass
@@ -13,9 +11,6 @@ class NodeData:
     type: int = 0
     text: str = ''
     expanded: bool = True
-
-    # def __repr__(self):
-    #     return '<id: {id}'.format(id=self.id)
 
 
 @dataclass
@@ -56,6 +51,3 @@ class NodeManager:
     def __init__(self, node_tree, conn):
         self.node_tree = node_tree
         self.conn = conn
-
-
-

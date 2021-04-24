@@ -1,3 +1,8 @@
+"""
+https://stackoverflow.com/questions/9750588/how-to-get-ctrl-shift-or-alt-with-getch-ncurses
+https://stackoverflow.com/questions/22362076/how-to-detect-curses-alt-key-combinations-in-python
+https://invisible-island.net/ncurses/ncurses.faq.html#modified_keys
+"""
 
 from win32api import STD_INPUT_HANDLE
 from win32console import GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT, ENABLE_LINE_INPUT, ENABLE_PROCESSED_INPUT

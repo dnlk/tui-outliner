@@ -63,24 +63,6 @@ Alt = Modifier.Alt
 Control = Modifier.Control
 Shift = Modifier.Shift
 
-#
-# class Modifiers:
-#     def __init__(self, alt: bool, control: bool, shift: bool):
-#         self.alt = alt
-#         self.control = control
-#         self.shift = shift
-#
-#     def __repr__(self):
-#         mods = []
-#         if self.control:
-#             mods.append('Control')
-#         if self.alt:
-#             mods.append('Alt')
-#         if self.shift:
-#             mods.append('Shift')
-#         mods_str = ', '.join(mods)
-#         return f'Modifers({mods_str})'
-
 
 @dataclass
 class KeyEvent:

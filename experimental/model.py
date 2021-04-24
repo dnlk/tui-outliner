@@ -1,15 +1,4 @@
-import adt
-import enums
-from typing import Callable, Generic, TypeVar, ClassVar
-
-
-
-
-# class NodeTempId(NodeId):
-#     def __init__(self):
-#         global __last_temp_id
-#         __last_temp_id += 1
-#         self.id = __last_temp_id
+from experimental import adt
 
 
 class Node(adt.DataEnum):
