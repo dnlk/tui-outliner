@@ -99,6 +99,10 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
             include_last=False
         )
 
+    def is_ancestor(self, _id: Id, ancestor_candidate: Id):
+        ancestors = self.get_ancestors(_id)
+        return ancestor_candidate in ancestors
+
     def get_ancestors_relative_to(self, _id: Id, ancestor_id: Id) -> List[Id]:
         ancestors = self.get_ancestors(_id)
         index = ancestors.index(ancestor_id)

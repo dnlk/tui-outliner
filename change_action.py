@@ -46,7 +46,7 @@ class ActionToChange:
                     prev_prev_id, prev_prev_link = prev_prev
                     changes.append(ch.MoveNode(node_id, prev_prev_id, prev_prev_link))
         elif action.is_type(act.MoveSelectedNodeDown):
-            if next_node_id := self.selection.get_next_non_descendant_node():
+            if next_node_id := self.selection.get_next_node():
                 if self.node_tree.is_expanded(next_node_id) and self.node_tree.tree.get_first_child(next_node_id):
                     link_type = TreeLink.Parent
                 else:
@@ -115,16 +115,16 @@ class ActionToChange:
                 changes.append(ch.DeleteNode(selected_node))
 
                 if action.is_type(act.DeleteSelectedNodeAndSelectNext):
-                    first_selection_attempt = self.selection.get_next_non_descendant_node
-                    second_selection_attempt = self.selection.get_previous_node
+                    selection_attempt_1 = self.selection.get_next_non_descendant_node
+                    selection_attempt_2 = self.selection.get_previous_node
                 else:
-                    first_selection_attempt = self.selection.get_previous_node
-                    second_selection_attempt = self.selection.get_next_non_descendant_node
+                    selection_attempt_1 = self.selection.get_previous_node
+                    selection_attempt_2 = self.selection.get_next_non_descendant_node
 
-                if next_selected_node := first_selection_attempt():
-                    changes.append(ch.NewSelection(next_selected_node))
-                elif prev_selected_node := second_selection_attempt():
-                    changes.append(ch.NewSelection(prev_selected_node))
+                if (new_id := selection_attempt_1()) and self.node_tree.is_ancestor_of_root(new_id):
+                    changes.append(ch.NewSelection(new_id))
+                elif (new_id := selection_attempt_2()) and self.node_tree.is_ancestor_of_root(new_id):
+                    changes.append(ch.NewSelection(new_id))
                 else:
                     assert False, 'Failed to determine next or previous selection'
         elif action.is_type(act.DiveIntoSelectedNode):

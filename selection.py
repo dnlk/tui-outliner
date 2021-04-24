@@ -36,7 +36,10 @@ class Selection:
             return first_child_id
 
         # Otherwise, get the next sibling or first parent with a sibling
-        return self.node_tree.tree.get_next_uncle(node_id)
+        next_node_id = self.get_next_non_descendant_node()
+
+        if next_node_id and self.node_tree.is_ancestor_of_root(next_node_id):
+            return next_node_id
 
     def get_next_non_descendant_node(self) -> Optional[NodeId]:
         node_id = self.selected_node_id

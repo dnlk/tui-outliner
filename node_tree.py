@@ -42,6 +42,9 @@ class NodeTree(tree.NodeTree[NodeId, NodeData]):
         # The first index is always `_id`, so check the second index
         return ancestors[1] == self.root_node and len(self.tree.get_children(self.root_node)) == 1
 
+    def is_ancestor_of_root(self, _id: NodeId) -> bool:
+        return self.tree.is_ancestor(_id, self.root_node)
+
     def get_depth(self, _id: NodeId) -> int:
         return self.tree.get_depth_relative_to(_id, self.root_node)
 
