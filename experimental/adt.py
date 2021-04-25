@@ -1,8 +1,7 @@
 
 import enum
 
-import containers_ext
-
+from ext import containers_ext
 
 Self = "SELF"
 

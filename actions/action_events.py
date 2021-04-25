@@ -1,10 +1,11 @@
 
-from keyboard_events import KeyboardEventAsync
-from windows_keyboard_events import WindowsKeyEventReader
 from enums import Mode
-from keys import Key, KeyEvent, Shift, Control, Alt
-import actions
-from ui import UIState
+from events.keyboard_events import KeyboardEventAsync
+from events.keys import Key, KeyEvent, Shift, Control
+from events.windows_keyboard_events import WindowsKeyEventReader
+from ui.ui import UIState
+
+from . import actions
 
 
 class ActionEventAsync:

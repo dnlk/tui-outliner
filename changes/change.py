@@ -4,9 +4,9 @@ from enum import Enum
 from typing import *
 
 from enums import Mode, TreeLink
-from node_path import NodePath
-from node_types import NodeId
-from text_editor import Cursor
+from nodes.node_types import NodeId
+from ui.node_path import NodePath
+from ui.text_editor import Cursor
 
 
 class Change:

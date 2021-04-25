@@ -9,7 +9,7 @@ from win32console import GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT, ENABLE_LINE
 import win32con
 from typing import Optional, Set
 
-from keys import Key, KeyEvent, Modifier
+from .keys import Key, KeyEvent, Modifier
 
 
 def _build_virtual_key_code_mappings():

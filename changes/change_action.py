@@ -1,15 +1,15 @@
 
 from typing import List
 
-import actions as act
-import change as ch
-from edit import Edit
+from actions import actions as act
+from changes import change as ch
+from ui.edit import Edit
 from enums import TreeLink, Mode
-import node as nd
-from node_path import BreadCrumb
-from node_tree import NodeTree
-from ui import UIState
-from selection import Selection
+from nodes import node as nd
+from nodes.node_tree import NodeTree
+from ui.node_path import BreadCrumb
+from ui.selection import Selection
+from ui.ui import UIState
 
 
 class ChangeAction:

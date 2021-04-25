@@ -1,8 +1,8 @@
 
 from typing import *
 
-import func
-from tree import UniqueNodeLinks
+from ext import func
+from datastructures.tree import UniqueNodeLinks
 
 
 Id = TypeVar('Id')

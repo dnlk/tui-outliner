@@ -4,9 +4,9 @@ from typing import *
 
 import consts
 from enums import NodeType, TreeLink
-from node import NodeData
-from node_tree import NodeContext
-from node_types import NodeId, IdType
+from nodes.node import NodeData
+from nodes.node_tree import NodeContext
+from nodes.node_types import NodeId, IdType
 
 
 SWAP_ID = -12345

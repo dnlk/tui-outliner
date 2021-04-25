@@ -1,14 +1,14 @@
 
 import globals as gls
 
-import change as ch
-from change_action import ChangeAction
-import db
+from changes import change as ch
+from changes.change_action import ChangeAction
+from db import db
 from enums import Mode
-from node import NodeData
-from node_tree import NodeTree, NodeContext
-from selection import Selection
-from ui import UIState
+from nodes.node import NodeData
+from nodes.node_tree import NodeTree, NodeContext
+from ui.selection import Selection
+from ui.ui import UIState
 
 
 class ChangeHandler:

@@ -1,9 +1,9 @@
 
 from typing import *
 
-import func
-from geometry import Coord
-from tree import UniqueNodeLinks
+from ext import func
+from ext.geometry import Coord
+from datastructures.tree import UniqueNodeLinks
 
 
 class LinkedListNode:

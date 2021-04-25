@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import *
 
-from node_types import NodeId
+from nodes.node_types import NodeId
 
 
 @dataclass

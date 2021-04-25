@@ -6,22 +6,21 @@ from asciimatics.screen import ManagedScreen, Screen as ScreenApi
 from globals import change_notifier
 
 import consts
-from change_action import ActionToChange
-from components import get_layout
-import db
-from edit import Edit
+from changes.change_action import ActionToChange
+from changes.handle_change import ChangeHandler
+from db import db, init_db
 import enums
-from handle_change import ChangeHandler
-import init_db
-from node_tree import NodeTree
-from selection import Selection
-from ui import UIState
+from nodes.node_tree import NodeTree
+from ui.edit import Edit
+from ui.selection import Selection
+from ui.ui import UIState
 from view.layout import Layout
 from view.render import RenderLayout
 from view_data_provider.breadcrumbs_data_provider import BreadcrumbsDataProvider
 from view_data_provider.node_tree_data_provider import NodeTreeDataProvider
+from view.ui_components import get_layout
 
-from action_events import ActionEventAsync
+from actions.action_events import ActionEventAsync
 
 
 class Screen:

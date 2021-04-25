@@ -3,8 +3,8 @@ from typing import *
 
 from globals import change_notifier
 
-from change import Change, ScrollAdjust
-import maths
+from changes.change import Change, ScrollAdjust
+from ext import maths
 from view.layout import Height
 from view.text import Line
 

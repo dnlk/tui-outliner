@@ -2,9 +2,10 @@
 import os
 
 import consts
-import db
 from enums import TreeLink
-from node import NodeId, get_next_available_temp_id
+from nodes.node import NodeId, get_next_available_temp_id
+
+from . import db
 
 
 def init_if_needed(db_path):

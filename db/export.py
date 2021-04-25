@@ -4,9 +4,10 @@ import sys
 from typing import List, Tuple
 
 import consts
-import db
 from enums import TreeLink
-from node_types import NodeId
+from nodes.node_types import NodeId
+
+from . import db
 
 
 def export_nodes(root_id, filename):
@@ -66,4 +67,4 @@ def import_nodes(filename, output_db_path):
 if __name__ == '__main__':
     export_filepath = sys.argv[1]
     # export_nodes(1, export_filepath)
-    import_nodes(export_filepath, 'db/db.sqlite')
+    import_nodes(export_filepath, 'db.sqlite')

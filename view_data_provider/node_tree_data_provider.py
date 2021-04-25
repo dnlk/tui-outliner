@@ -4,14 +4,14 @@ from typing import *
 
 from asciimatics import screen
 
+from datastructures.linked_list import LinkedList, DefaultId, DefaultIdFactory
 import enums
-import func
-from geometry import Coord
-from node_types import NodeId
-from linked_list import LinkedList, DefaultId, DefaultIdFactory
-from selection import Selection
-from text_editor import TextFormat
-from ui import UIState
+from ext import func
+from ext.geometry import Coord
+from nodes.node_types import NodeId
+from ui.selection import Selection
+from ui.text_editor import TextFormat
+from ui.ui import UIState
 from view.color import Color
 from view.text import TextSnippet, Line
 

@@ -1,8 +1,8 @@
 
 from typing import *
 
-from node_tree import NodeTree
-from node_types import NodeId
+from nodes.node_tree import NodeTree
+from nodes.node_types import NodeId
 
 
 class Selection:

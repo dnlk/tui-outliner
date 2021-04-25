@@ -1,10 +1,7 @@
-
-from typing import *
-
 import consts
-from node import NodeData
-from node_types import NodeId
-import tree
+from datastructures import tree
+from nodes.node import NodeData
+from nodes.node_types import NodeId
 
 
 class NodeContext(tree.NodeContext[NodeId, NodeData]):

@@ -1,5 +1,5 @@
 
-from text_editor import TextEditor
+from ui.text_editor import TextEditor
 
 
 class Edit:

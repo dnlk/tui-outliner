@@ -1,10 +1,9 @@
 
 from typing import *
 
-from containers_ext import BijectiveMap
+from ext.containers_ext import BijectiveMap
 from enums import TreeLink
-import func
-
+from ext import func
 
 Id = TypeVar('Id')
 Link = TypeVar('Link')

@@ -3,7 +3,7 @@ from typing import *
 
 from view.color import Color
 from view.text import Line, simple_line
-from ui import UIState
+from ui.ui import UIState
 
 
 def _clamp_breadcrumb_part_text(s):

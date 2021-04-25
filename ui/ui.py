@@ -2,10 +2,10 @@
 from copy import deepcopy
 from enums import Mode
 
-from edit import Edit
-from node_tree import NodeTree
-from node_path import NodePath
-from selection import Selection
+from nodes.node_tree import NodeTree
+from ui.edit import Edit
+from ui.node_path import NodePath
+from ui.selection import Selection
 
 
 class UIState:

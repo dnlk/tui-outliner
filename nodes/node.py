@@ -1,9 +1,7 @@
 
 from dataclasses import dataclass
 
-from typing import *
-
-from node_types import NodeId, IdType, PreviousNodeType, PreviousNode
+from nodes.node_types import NodeId, IdType, PreviousNodeType, PreviousNode
 
 
 @dataclass
