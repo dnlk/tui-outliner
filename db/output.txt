@@ -1,6 +1,0 @@
-* aaa
-  * bbb
-    * fff
-      * eeee
-      * ccc
-  * ddd

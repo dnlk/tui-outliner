@@ -1,8 +1,6 @@
 
-import sqlite3
 from typing import *
 
-import consts
 from enums import NodeType, TreeLink
 from nodes.node import NodeData
 from nodes.node_tree import NodeContext
@@ -44,32 +42,21 @@ def get_db_nodeid(node_id: NodeId) -> NodeId:
         return node_id
 
 
-def run_query(cursor: sqlite3.Cursor, query: str, args: List[SupportedSqlParameterType]):
+async def run_query(cursor, query: str, args: List[SupportedSqlParameterType]):
     modified_args: List[SqliteBindingType] = [convert_arg(arg) for arg in args]
-    result = cursor.execute(query, modified_args)
+    result = await cursor.execute(query, modified_args)
     return result
 
 
-def create_connection(db_path):
-    return sqlite3.connect(db_path)
-
-
-def initialize_db(conn):
-    with open(consts.SCHEMA_PATH, 'r') as f:
-        schema = f.read()
-    conn.cursor().execute(schema)
-    conn.commit()
-
-
-def create_node(cursor, node_id, previous_node_id, previous_node_link, text='') -> int:
+async def create_node(cursor, node_id, previous_node_id, previous_node_link, text='') -> int:
 
     query = """
-        INSERT INTO node 
+        INSERT INTO node
             (previous_node_id, previous_node_link, type, text, expanded)
         VALUES
             (?, ?, 0, ?, 1)
     """
-    result = run_query(
+    result = await run_query(
         cursor,
         query,
         [
@@ -85,49 +72,49 @@ def create_node(cursor, node_id, previous_node_id, previous_node_link, text='') 
     return cursor.lastrowid
 
 
-def _get_previous_linkage(cursor, node_id: NodeId):
+async def _get_previous_linkage(cursor, node_id: NodeId):
     query_get_original_link = """
         SELECT previous_node_id, previous_node_link
         FROM node
         WHERE id=?1
     """
 
-    result = run_query(
+    result = await run_query(
         cursor,
         query_get_original_link,
         [
             node_id
         ]
     )
-    return result.fetchone()
+    return await result.fetchone()
 
 
-def _get_next_node_id(cursor, node_id: NodeId, link_type: TreeLink):
+async def _get_next_node_id(cursor, node_id: NodeId, link_type: TreeLink):
     query_get_next_id = f"""
         SELECT id
         FROM node
         WHERE previous_node_id=?1 AND previous_node_link={link_type}
     """
 
-    result = run_query(
+    result = await run_query(
         cursor,
         query_get_next_id,
         args=[
             node_id
         ]
     )
-    if row := result.fetchone():
+    if row := await result.fetchone():
         return row[0]
 
 
-def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
+async def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
     query_switch_previous_node = f"""
         UPDATE node
         SET previous_node_id=?2, previous_node_link={link_type}
         WHERE id=?1
     """
 
-    result = run_query(
+    result = await run_query(
         cursor,
         query_switch_previous_node,
         [
@@ -138,26 +125,26 @@ def switch_previous_node(cursor, node_id: NodeId, previous_sibling_id: NodeId, l
     return
 
 
-def create_node_after(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
+async def create_node_after(cursor, node_id: NodeId, previous_sibling_id: NodeId, link_type: TreeLink):
 
-    create_node(cursor, node_id, SWAP_ID, link_type)
+    await create_node(cursor, node_id, SWAP_ID, link_type)
 
-    if next_id := _get_next_node_id(cursor, previous_sibling_id, link_type):
-        switch_previous_node(cursor, next_id, node_id, TreeLink.Sibling)
+    if next_id := await _get_next_node_id(cursor, previous_sibling_id, link_type):
+        await switch_previous_node(cursor, next_id, node_id, TreeLink.Sibling)
 
-    switch_previous_node(cursor, node_id, previous_sibling_id, link_type)
+    await switch_previous_node(cursor, node_id, previous_sibling_id, link_type)
 
 
-def _splice_node(cursor, node_id: NodeId):
+async def _splice_node(cursor, node_id: NodeId):
 
-    previous_node_id, previous_node_link = _get_previous_linkage(cursor, node_id)
+    previous_node_id, previous_node_link = await _get_previous_linkage(cursor, node_id)
 
     query_remove_link = f"""
         UPDATE node
         SET previous_node_id={SWAP_ID}
         WHERE id=?1
     """
-    result1 = run_query(
+    result1 = await run_query(
         cursor,
         query_remove_link,
         [
@@ -165,31 +152,31 @@ def _splice_node(cursor, node_id: NodeId):
         ]
     )
 
-    if next_node_id := _get_next_node_id(cursor, node_id, TreeLink.Sibling):
-        switch_previous_node(cursor, next_node_id, previous_node_id, previous_node_link)
+    if next_node_id := await _get_next_node_id(cursor, node_id, TreeLink.Sibling):
+        await switch_previous_node(cursor, next_node_id, previous_node_id, previous_node_link)
 
 
-def _insert_after(cursor, node_id: NodeId, previous_id: NodeId, link_type: TreeLink):
+async def _insert_after(cursor, node_id: NodeId, previous_id: NodeId, link_type: TreeLink):
 
-    if next_id := _get_next_node_id(cursor, previous_id, link_type):
-        switch_previous_node(cursor, next_id, node_id, TreeLink.Sibling)
+    if next_id := await _get_next_node_id(cursor, previous_id, link_type):
+        await switch_previous_node(cursor, next_id, node_id, TreeLink.Sibling)
 
-    switch_previous_node(cursor, node_id, previous_id, link_type)
-
-
-def move_after(cursor, node_id: NodeId, previous_id: NodeId, link_type: TreeLink):
-    _splice_node(cursor, node_id)
-    _insert_after(cursor, node_id, previous_id, link_type)
+    await switch_previous_node(cursor, node_id, previous_id, link_type)
 
 
-def delete_node(cursor, node_id: NodeId):
-    _splice_node(cursor, node_id)
+async def move_after(cursor, node_id: NodeId, previous_id: NodeId, link_type: TreeLink):
+    await _splice_node(cursor, node_id)
+    await _insert_after(cursor, node_id, previous_id, link_type)
+
+
+async def delete_node(cursor, node_id: NodeId):
+    await _splice_node(cursor, node_id)
 
     delete_node_query = """
         DELETE FROM node
         WHERE id=?1
     """
-    result = run_query(
+    result = await run_query(
         cursor,
         delete_node_query,
         args=[
@@ -198,14 +185,14 @@ def delete_node(cursor, node_id: NodeId):
     )
 
 
-def get_node(cursor, node_id: NodeId) -> NodeContext:
+async def get_node(cursor, node_id: NodeId) -> NodeContext:
     query_node = """
         SELECT previous_node_id, previous_node_link, type, text, expanded
         FROM node
         WHERE id=?
     """
-    result = run_query(cursor, query_node, [node_id])
-    previous_node_id, previous_link_type, node_type_enum, text, expanded = result.fetchone()
+    result = await run_query(cursor, query_node, [node_id])
+    previous_node_id, previous_link_type, node_type_enum, text, expanded = await result.fetchone()
     previous_node_id = NodeId(previous_node_id)
     previous_link_type = TreeLink(previous_link_type)
     node_type_enum = NodeType(node_type_enum)
@@ -216,38 +203,38 @@ def get_node(cursor, node_id: NodeId) -> NodeContext:
     return node_context
 
 
-def get_all_nodes(cursor):
+async def get_all_nodes(cursor):
     query = """
         SELECT (id)
         FROM node
     """
 
     return [
-        get_node(cursor, NodeId(results[0], IdType.DB))
-        for results
-        in cursor.execute(query).fetchall()
+        await get_node(cursor, NodeId(results[0], IdType.DB))
+        async for results
+        in await cursor.execute(query)
     ]
 
 
-def update_node_text(cursor, node_id, text):
+async def update_node_text(cursor, node_id, text):
     query = """
         UPDATE node
         SET text=?1
         WHERE id=?2
     """
-    result = run_query(cursor, query, [text, node_id])
+    result = await run_query(cursor, query, [text, node_id])
 
 
-def update_node_expanded(cursor, node_id: NodeId, expanded: bool):
+async def update_node_expanded(cursor, node_id: NodeId, expanded: bool):
     query = f"""
         UPDATE node
         SET expanded={expanded}
         WHERE id=?1
     """
-    result = run_query(cursor, query, [node_id])
+    result = await run_query(cursor, query, [node_id])
 
 
-def depth_first_traversal(cursor, root_id, callback):
+async def depth_first_traversal(cursor, root_id, callback):
 
     traversal_query = """
             WITH RECURSIVE
@@ -270,7 +257,7 @@ def depth_first_traversal(cursor, root_id, callback):
             SELECT id, text, level FROM traverse_nodes;
         """
 
-    result = run_query(
+    result = await run_query(
         cursor,
         traversal_query,
         [
@@ -278,5 +265,5 @@ def depth_first_traversal(cursor, root_id, callback):
         ]
     )
 
-    for _id, text, level in result.fetchall():
+    for _id, text, level in await result.fetchall():
         callback(_id, text, level)

@@ -134,3 +134,6 @@ dmypy.json
 
 # Databases
 *.sqlite
+
+# database exports
+*output.txt

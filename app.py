@@ -8,7 +8,7 @@ from globals import change_notifier
 import consts
 from changes.change_action import ActionToChange
 from changes.handle_change import ChangeHandler
-from db import db, init_db
+from database import async_db_commands, db, init_db
 import enums
 from nodes.node_tree import NodeTree
 from ui.edit import Edit
@@ -75,11 +75,13 @@ async def action_event_loop(
 
 async def main(db_path=None):
     db_path = db_path or consts.DB_PATH
-    init_db.init_if_needed(db_path)
+    await init_db.init_if_needed(db_path)
 
-    conn = db.create_connection(db_path)
+    db_commands = async_db_commands.AsyncDbCommands(db_path)
+    db_commands.process_database_queue()
 
-    all_nodes = db.get_all_nodes(conn.cursor())
+    all_nodes = await db_commands.enqueue_database_transaction(db.get_all_nodes)
+
     node_tree = NodeTree(all_nodes)
     selection = Selection(node_tree)
     selection.selected_node_id = node_tree.first_node
@@ -103,7 +105,7 @@ async def main(db_path=None):
         )
 
         # This variable isn't used, but we need a reference to it to keep it alive
-        change_handler = ChangeHandler(node_tree, selection, ui_state, screen, conn)
+        change_handler = ChangeHandler(ui_state, screen, db_commands)
         id(change_handler)  # Use it in a noop to make static checking happy
 
         await action_event_loop(ui_state, screen, layout)

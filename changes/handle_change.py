@@ -1,23 +1,23 @@
 
 import globals as gls
 
+from database.async_db_commands import AsyncDbCommands
 from changes import change as ch
 from changes.change_action import ChangeAction
-from db import db
+from database import db
 from enums import Mode
 from nodes.node import NodeData
-from nodes.node_tree import NodeTree, NodeContext
-from ui.selection import Selection
+from nodes.node_tree import NodeContext
 from ui.ui import UIState
 
 
 class ChangeHandler:
-    def __init__(self, node_tree: NodeTree, selection: Selection, ui_state: UIState, screen, conn):
-        self.node_tree = node_tree
-        self.selection = selection
+    def __init__(self, ui_state: UIState, screen, db_commands: AsyncDbCommands):
+        self.node_tree = ui_state.node_tree
+        self.selection = ui_state.selection
         self.ui_state = ui_state
         self.screen = screen
-        self.conn = conn
+        self.db_commands = db_commands
 
         gls.change_notifier.register(self, ch.ChangeMode)
         gls.change_notifier.register(self, ch.NewSelection)
@@ -57,12 +57,24 @@ class ChangeHandler:
             )
             self.node_tree.insert_node(node_context)
 
-            db.create_node_after(self.conn.cursor(), change.node_id, change.previous_id, change.link_type)
-            self.conn.commit()
+            self.db_commands.enqueue_database_transaction(
+                db.create_node_after,
+                args=[
+                    change.node_id,
+                    change.previous_id,
+                    change.link_type
+                ]
+            )
         elif isinstance(change, ch.MoveNode):
             self.node_tree.tree.move_after(change.id, change.previous_node_id, change.link_type)
-            db.move_after(self.conn.cursor(), change.id, change.previous_node_id, change.link_type)
-            self.conn.commit()
+            self.db_commands.enqueue_database_transaction(
+                db.move_after,
+                args=[
+                    change.id,
+                    change.previous_node_id,
+                    change.link_type
+                ]
+            )
         elif isinstance(change, ch.AddCharacter):
             self.ui_state.node_edit.text_editor.add_character(change.char, change.cursor)
         elif isinstance(change, ch.RemoveCharacter):
@@ -72,23 +84,33 @@ class ChangeHandler:
         elif isinstance(change, ch.SetNodeText):
             node_id = self.selection.selected_node_id
             node = self.node_tree.get_node(node_id)
-            db.update_node_text(
-                self.conn.cursor(),
-                node_id,
-                change.text
+            self.db_commands.enqueue_database_transaction(
+                db.update_node_text,
+                args=[
+                    node_id,
+                    change.text
+                ]
             )
-            self.conn.commit()
             node.text = change.text
         elif isinstance(change, ch.DeleteNode):
             self.node_tree.delete_node(change.node_id)
-            db.delete_node(self.conn.cursor(), change.node_id)
-            self.conn.commit()
+            self.db_commands.enqueue_database_transaction(
+                db.delete_node,
+                args=[
+                    change.node_id
+                ]
+            )
         elif isinstance(change, ch.SetRootNode):
             self.node_tree.root_node = change.node_id
         elif isinstance(change, ch.SetExpanded):
             self.node_tree.set_expanded(change.node_id, change.expanded)
-            db.update_node_expanded(self.conn.cursor(), change.node_id, change.expanded)
-            self.conn.commit()
+            self.db_commands.enqueue_database_transaction(
+                db.update_node_expanded,
+                args=[
+                    change.node_id,
+                    change.expanded
+                ]
+            )
         elif isinstance(change, ch.SetNodePath):
             self.ui_state.node_path = change.node_path
         else:
