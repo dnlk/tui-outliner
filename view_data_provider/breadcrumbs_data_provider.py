@@ -43,8 +43,8 @@ class BreadcrumbsDataProvider:
             return []
 
         return [
+            self._get_divider_text(),
             self._get_breadcrumbs_text(),
-            self._get_divider_text()
         ]
 
     def num_lines(self) -> int:

@@ -4,16 +4,19 @@ from typing import *
 
 from asciimatics import screen
 
+import consts
+
 from datastructures.linked_list import LinkedList, DefaultId, DefaultIdFactory
 import enums
 from ext import func
 from ext.geometry import Coord
+from nodes.node_tree import NodeTree
 from nodes.node_types import NodeId
 from ui.selection import Selection
 from ui.text_editor import TextFormat
 from ui.ui import UIState
 from view.color import Color
-from view.text import TextSnippet, Line
+from view.text import TextSnippet, Line, simple_line
 
 BLACK = screen.Screen.COLOUR_BLACK
 CYAN = screen.Screen.COLOUR_CYAN
@@ -77,9 +80,40 @@ class FormattedNodeCache(LinkedList[DefaultId, DefaultIdFactory, CachedNode]):
         return sum(node.num_lines for node in self.get_ordered_nodes())
 
 
+class NodeSubTreeHeaderDataProvider:
+
+    def __init__(self, node_tree: NodeTree):
+        self.node_tree = node_tree
+        self.width = 0
+
+    def set_width(self, width: int):
+        self.width = width
+
+    def get_lines(self) -> List[Line]:
+        root_node = self.node_tree.root_node
+        if root_node.id == consts.ROOT_NODE_ID:
+            return [
+                simple_line('Welcome to your happy place. :)', 0, bg_color=Color.Black, fg_color=Color.White),
+                simple_line('-' * self.width, 0, bg_color=Color.Black, fg_color=Color.White)
+            ]
+        else:
+            node = self.node_tree.get_node(root_node)
+            node_text = node.text or "<empty node text>"
+            return [
+                simple_line(node_text, 0, bg_color=Color.Black, fg_color=Color.White),
+                simple_line('-' * self.width, 0, bg_color=Color.Black, fg_color=Color.White)
+            ]
+
+    def num_lines(self) -> int:
+        if self.node_tree.root_node.id == consts.ROOT_NODE_ID:
+            return 2
+        else:
+            return 2
+
+
 class NodeTreeDataProvider:
     def __init__(self, ui_state: UIState):
-        self.node_tree = ui_state.node_tree
+        self.node_tree: NodeTree = ui_state.node_tree
         self.selection = ui_state.selection
         self.node_edit = ui_state.node_edit
         self.ui_state = ui_state
@@ -87,6 +121,7 @@ class NodeTreeDataProvider:
         self.previous_line_number = 0
         self.window_begin = 0
         self.formatted_node_cache: Optional[FormattedNodeCache] = None
+        self.node_sub_tree_header_data_provider = NodeSubTreeHeaderDataProvider(self.node_tree)
 
     def add_node_to_cache(self, node_id, margin_left, has_children):
         node = self.node_tree.get_node(node_id)

@@ -21,10 +21,9 @@ def get_layout(
         width=width,
         height=height,
         components=[
-            SimpleLine('Welcome to your happy place. :)', bg_color=Color.Black, fg_color=Color.White),
-            SimpleLine('-' * width, bg_color=Color.Black, fg_color=Color.White),
-            Lines(breadcrumbs_data_provider, width=width),
+            Lines(node_tree_data_provider.node_sub_tree_header_data_provider, width=width),
             ScrollableLines(node_tree_data_provider, width=width, height=Height.Fill),
+            Lines(breadcrumbs_data_provider, width=width),
             Lines(search_data_provider, width=width),
         ]
     )
