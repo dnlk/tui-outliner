@@ -9,6 +9,10 @@ class Action:
         return isinstance(self, cls)
 
 
+class NoOp(Action):
+    ...
+
+
 class _Navigate(Action):
     def __init__(self, num_rows: int):
         self.num_rows = num_rows

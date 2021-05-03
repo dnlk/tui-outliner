@@ -10,6 +10,7 @@ class NodeType(enum.Enum):
 class Mode(enum.Enum):
     Navigate = 0
     EditNode = 1
+    Search = 2
 
 
 class TreeLink(enum.Enum):

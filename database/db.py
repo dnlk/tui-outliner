@@ -11,6 +11,7 @@ SWAP_ID = -12345
 
 
 new_node_mapping: Dict[NodeId, NodeId] = {}
+reverse_new_node_mapping: Dict[NodeId, NodeId] = {}
 
 
 SupportedSqlParameterType = Union[None, int, str, NodeId]
@@ -68,6 +69,7 @@ async def create_node(cursor, node_id, previous_node_id, previous_node_link, tex
 
     if not node_id.is_none() and node_id.type == IdType.Temp:
         new_node_mapping[node_id] = NodeId(cursor.lastrowid)
+        reverse_new_node_mapping[NodeId(cursor.lastrowid)] = node_id
 
     return cursor.lastrowid
 
@@ -267,3 +269,24 @@ async def depth_first_traversal(cursor, root_id, callback):
 
     for _id, text, level in await result.fetchall():
         callback(_id, text, level)
+
+
+async def get_nodes_matching_text(cursor, root_id: NodeId, text: str):
+
+    results = set()
+    stack = []
+
+    def callback(_id, node_text, level):
+        nonlocal stack
+        stack = stack[:level - 1]
+        stack.append(_id)
+
+        if text in node_text:
+            for x in stack:
+                node_id = NodeId(x)
+                if node_id in reverse_new_node_mapping:
+                    node_id = reverse_new_node_mapping[node_id]
+                results.add(node_id)
+
+    await depth_first_traversal(cursor, root_id, callback)
+    return results

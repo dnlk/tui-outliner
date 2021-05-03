@@ -34,14 +34,14 @@ class ActionToChange:
         if action.is_type(act.ChangeMode):
             changes.append(ch.ChangeMode(action.mode))
         elif action.is_type(act.NavigateUp):
-            if new_selected_node := self.selection.get_previous_node():
+            if new_selected_node := self.selection.get_previous_visible_node():
                 changes.append(ch.NewSelection(new_selected_node))
         elif action.is_type(act.NavigateDown):
-            if new_selected_node := self.selection.get_next_node():
+            if new_selected_node := self.selection.get_next_visible_node():
                 changes.append(ch.NewSelection(new_selected_node))
         elif action.is_type(act.MoveSelectedNodeUp):
             node_id = self.selection.selected_node_id
-            if prev_node_id := self.selection.get_previous_node():
+            if prev_node_id := self.selection.get_previous_visible_node():
                 if prev_prev := self.node_tree.tree.get_previous(prev_node_id):
                     prev_prev_id, prev_prev_link = prev_prev
                     changes.append(ch.MoveNode(node_id, prev_prev_id, prev_prev_link))
@@ -75,38 +75,47 @@ class ActionToChange:
                 if parent_id != self.node_tree.root_node:
                     changes.append(ch.MoveNode(selected_node_id, parent_id, TreeLink.Sibling))
         elif action.is_type(act.AddCharacterToEdit):
-            cursor = self.node_edit.text_editor.cursor
-            new_cursor = self.node_edit.text_editor.cursor.with_offset_incr(1)
+            text_editor = self._get_relevant_text_editor()
+            cursor = text_editor.cursor
+            new_cursor = text_editor.cursor.with_offset_incr(1)
             changes.append(ch.AddCharacter(cursor, action.char))
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.FinishEditing):
             changes.append(ch.ChangeMode(Mode.Navigate))
             changes.append(ch.SetNodeText(self.node_edit.node_id, self.node_edit.text_editor.get_data()))
         elif action.is_type(act.CursorIncrement):
-            new_cursor = self.node_edit.text_editor.calculate_cursor.get_incr_cursor()
+            text_editor = self._get_relevant_text_editor()
+            new_cursor = text_editor.calculate_cursor.get_incr_cursor()
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.CursorDecrement):
-            new_cursor = self.node_edit.text_editor.calculate_cursor.get_decr_cursor()
+            text_editor = self._get_relevant_text_editor()
+            new_cursor = text_editor.calculate_cursor.get_decr_cursor()
             changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.CursorRowIncrement):
-            remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
-            new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_incr_row(remaining_width)
-            changes.append(ch.SetCursor(new_cursor))
+            if self.ui_state.mode == Mode.EditNode:
+                remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
+                new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_incr_row(remaining_width)
+                changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.CursorRowDecrement):
-            remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
-            new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
-            changes.append(ch.SetCursor(new_cursor))
+            if self.ui_state.mode == Mode.EditNode:
+                remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
+                new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
+                changes.append(ch.SetCursor(new_cursor))
         elif action.is_type(act.RemoveCharacterBeforeCursor):
-            assert len(self.node_edit.text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+            text_editor = self._get_relevant_text_editor()
 
-            if not self.node_edit.text_editor.calculate_cursor.is_origin():
-                new_cursor = self.node_edit.text_editor.calculate_cursor.get_decr_cursor()
+            assert len(text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+
+            if not text_editor.calculate_cursor.is_origin():
+                new_cursor = text_editor.calculate_cursor.get_decr_cursor()
                 changes.append(ch.SetCursor(new_cursor))
                 changes.append(ch.RemoveCharacter(new_cursor))
         elif action.is_type(act.RemoveCharacterAtCursor):
-            assert len(self.node_edit.text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+            text_editor = self._get_relevant_text_editor()
 
-            cursor = self.node_edit.text_editor.cursor
+            assert len(text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
+
+            cursor = text_editor.cursor
             changes.append(ch.RemoveCharacter(cursor))
         elif (action.is_type(act.DeleteSelectedNodeAndSelectNext) or
               action.is_type(act.DeleteSelectedNodeAndSelectPrevious)):
@@ -165,3 +174,11 @@ class ActionToChange:
     @property
     def selected_node(self):
         return self.node_tree.get_node(self.selected_id)
+
+    def _get_relevant_text_editor(self):
+        if self.ui_state.mode == Mode.EditNode:
+            return self.ui_state.node_edit.text_editor
+        elif self.ui_state.mode == Mode.Search:
+            return self.ui_state.search.editor
+        else:
+            assert False

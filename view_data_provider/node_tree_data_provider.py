@@ -135,6 +135,8 @@ class NodeTreeDataProvider:
         self.formatted_node_cache.add_to_end(formatted_node)
 
     def add_tree_to_cache(self, node_id: NodeId, margin_left: int):
+        if not self.ui_state.search.is_visible(node_id):
+            return
 
         node = self.node_tree.get_node(node_id)
         children = self.node_tree.tree.get_children(node_id)

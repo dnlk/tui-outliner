@@ -1,4 +1,8 @@
 
+from aiostream import stream
+
+import globals
+
 from enums import Mode
 from events.keyboard_events import KeyboardEventAsync
 from events.keys import Key, KeyEvent, Shift, Control
@@ -17,6 +21,8 @@ class ActionEventAsync:
 
         if key_event == Key.ESCAPE:
             return actions.ChangeMode(Mode.EditNode)
+        elif key_event == Key.S:
+            return actions.ChangeMode(Mode.Search)
         elif key_event == Key.DOWN:
             return actions.NavigateDown(1)
         elif key_event == Key.UP:
@@ -72,12 +78,22 @@ class ActionEventAsync:
         else:
             print(f'Unhandled key event: {key_event}')
 
+    def _get_search_action(self, key_event: KeyEvent):
+        if key_event == Key.ESCAPE:
+            return actions.ChangeMode(Mode.Navigate)
+        else:
+            return self._get_edit_action(key_event)
+
     async def next_action(self):
         next_key = await self.keyboard_event_async.next_key()
 
         print(next_key)
 
-        if self.ui_state.mode == Mode.Navigate:
+        if next_key == Key.NULL:
+            return actions.NoOp()
+        elif self.ui_state.mode == Mode.Navigate:
             return self._get_navigate_action(next_key)
         elif self.ui_state.mode == Mode.EditNode:
             return self._get_edit_action(next_key)
+        elif self.ui_state.mode == Mode.Search:
+            return self._get_search_action(next_key)

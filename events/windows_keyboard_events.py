@@ -4,6 +4,8 @@ https://stackoverflow.com/questions/22362076/how-to-detect-curses-alt-key-combin
 https://invisible-island.net/ncurses/ncurses.faq.html#modified_keys
 """
 
+import globals
+
 from win32api import STD_INPUT_HANDLE
 from win32console import GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT, ENABLE_LINE_INPUT, ENABLE_PROCESSED_INPUT
 import win32con
@@ -65,6 +67,11 @@ class WindowsKeyEventReader:
                 return next_event
 
     def get_next_key(self) -> Optional[KeyEvent]:
+
+        if globals.null_event_required:
+            globals.null_event_required = False
+            return KeyEvent(Key.NULL, set(), '')
+
         next_event = self._get_next_event()
 
         if next_event is None:

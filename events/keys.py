@@ -52,6 +52,8 @@ class Key(enum.Enum):
     SPACE = 'space'
     RETURN = 'return'
 
+    NULL = None
+
 
 class Modifier(enum.Enum):
     Alt = 'alt'

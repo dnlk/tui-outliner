@@ -1,8 +1,11 @@
 
+from typing import *
+
 from copy import deepcopy
 from enums import Mode
 
 from nodes.node_tree import NodeTree
+from search import Search
 from ui.edit import Edit
 from ui.node_path import NodePath
 from ui.selection import Selection
@@ -15,12 +18,13 @@ class UIState:
     selection: Selection
     node_tree: NodeTree
 
-    def __init__(self, mode: Mode, selection: Selection, node_edit: Edit, node_tree: NodeTree, screen):
+    def __init__(self, mode: Mode, selection: Selection, node_edit: Edit, search: Search, node_tree: NodeTree, screen):
         self.mode = mode
         self.selection = selection
         self.node_edit = node_edit
         self.node_tree = node_tree
         self.screen = screen
+        self.search = search
 
         node_path = NodePath()
         node_path.node_ids = [self.node_tree.root_node]
