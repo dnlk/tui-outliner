@@ -11,15 +11,15 @@ from changes.handle_change import ChangeHandler
 from database import async_db_commands, db, init_db
 import enums
 from nodes.node_tree import NodeTree
-from search import Search
+from filter import Filter
 from ui.edit import Edit
 from ui.selection import Selection
 from ui.ui import UIState
 from view.layout import Layout
 from view.render import RenderLayout
 from view_data_provider.breadcrumbs_data_provider import BreadcrumbsDataProvider
+from view_data_provider.filter_data_provider import FilterDataProvider
 from view_data_provider.node_tree_data_provider import NodeTreeDataProvider
-from view_data_provider.search_data_provider import SearchDataProvider
 from view.ui_components import get_layout
 
 from actions.action_events import ActionEventAsync
@@ -85,8 +85,8 @@ async def main(db_path=None):
     all_nodes = await db_commands.enqueue_database_transaction(db.get_all_nodes)
 
     node_tree = NodeTree(all_nodes)
-    search = Search()
-    selection = Selection(node_tree, search)
+    filter = Filter()
+    selection = Selection(node_tree, filter)
     selection.selected_node_id = node_tree.first_node
     node_edit = Edit()
 
@@ -94,19 +94,19 @@ async def main(db_path=None):
 
         screen = Screen(_screen)
 
-        ui_state = UIState(enums.Mode.Navigate, selection, node_edit, search, node_tree, screen)
+        ui_state = UIState(enums.Mode.Navigate, selection, node_edit, filter, node_tree, screen)
         ui_state.mode = enums.Mode.Navigate
 
         node_tree_data_provider = NodeTreeDataProvider(ui_state)
         breadcrumbs_data_provider = BreadcrumbsDataProvider(ui_state)
-        search_data_provider = SearchDataProvider(ui_state)
+        filter_data_provider = FilterDataProvider(ui_state)
 
         layout = get_layout(
             width=screen.width,
             height=screen.height - 2,  # Reserve two lines at the bottom for some extra logging
             breadcrumbs_data_provider=breadcrumbs_data_provider,
             node_tree_data_provider=node_tree_data_provider,
-            search_data_provider=search_data_provider,
+            filter_data_provider=filter_data_provider,
         )
 
         # This variable isn't used, but we need a reference to it to keep it alive

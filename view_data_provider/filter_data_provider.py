@@ -7,9 +7,9 @@ from view.color import Color
 from view.text import Line, simple_line, line_with_cursor
 
 
-class SearchDataProvider:
+class FilterDataProvider:
     def __init__(self, ui_state: UIState):
-        self.search = ui_state.search
+        self.filter = ui_state.filter
         self.ui_state = ui_state
         self.width = 0
 
@@ -17,12 +17,12 @@ class SearchDataProvider:
         self.width = width
 
     def get_lines(self) -> List[Line]:
-        if self.ui_state.mode == Mode.Search:
-            cursor_pos = self.search.editor.cursor.offset
+        if self.ui_state.mode == Mode.Filter:
+            cursor_pos = self.filter.editor.cursor.offset
             return [
                 simple_line('-' * self.width, 0, Color.Black, Color.White),
                 line_with_cursor(
-                    self.search.editor.get_data(),
+                    self.filter.editor.get_data(),
                     0,
                     cursor_pos,
                     Color.Black,
@@ -35,7 +35,7 @@ class SearchDataProvider:
             return []
 
     def num_lines(self) -> int:
-        if self.ui_state.mode == Mode.Search:
+        if self.ui_state.mode == Mode.Filter:
             return 2
         else:
             return 0

@@ -3,14 +3,14 @@ from typing import *
 
 from nodes.node_tree import NodeTree
 from nodes.node_types import NodeId
-from search import Search
+from filter import Filter
 
 
 class Selection:
-    def __init__(self, node_tree: NodeTree, search: Search):
+    def __init__(self, node_tree: NodeTree, filter: Filter):
         self._selected_node_id: NodeId = None
         self.node_tree = node_tree
-        self.search = search
+        self.filter = filter
 
     @property
     def selected_node_id(self) -> NodeId:
@@ -68,7 +68,7 @@ class Selection:
     def get_next_visible_node(self) -> Optional[NodeId]:
         node_id = self.selected_node_id
         while node_id := self.get_next_from(node_id):
-            if self.search.is_visible(node_id):
+            if self.filter.is_visible(node_id):
                 return node_id
 
     def select_next_visible_node(self):
@@ -79,5 +79,5 @@ class Selection:
     def get_previous_visible_node(self) -> Optional[NodeId]:
         node_id = self.selected_node_id
         while node_id := self.get_previous_from(node_id):
-            if self.search.is_visible(node_id):
+            if self.filter.is_visible(node_id):
                 return node_id

@@ -5,7 +5,7 @@ from nodes.node_types import NodeId
 from ui.text_editor import TextEditor
 
 
-class Search:
+class Filter:
     editor: TextEditor
     matched_node_ids: Optional[List[NodeId]]
 

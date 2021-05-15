@@ -178,7 +178,7 @@ class ActionToChange:
     def _get_relevant_text_editor(self):
         if self.ui_state.mode == Mode.EditNode:
             return self.ui_state.node_edit.text_editor
-        elif self.ui_state.mode == Mode.Search:
-            return self.ui_state.search.editor
+        elif self.ui_state.mode == Mode.Filter:
+            return self.ui_state.filter.editor
         else:
             assert False

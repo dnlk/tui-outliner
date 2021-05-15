@@ -118,39 +118,39 @@ class ChangeHandler:
             if self.ui_state.mode == Mode.EditNode:
                 self.ui_state.node_edit.text_editor.add_character(change.char, change.cursor)
             else:
-                self.ui_state.search.editor.add_character(change.char, change.cursor)
-                self._update_search(self.ui_state.search.editor.get_data())
+                self.ui_state.filter.editor.add_character(change.char, change.cursor)
+                self._update_filter(self.ui_state.filter.editor.get_data())
         elif isinstance(change, ch.RemoveCharacter):
             if self.ui_state.mode == Mode.EditNode:
                 self.ui_state.node_edit.text_editor.remove_character(change.cursor)
             else:
-                self.ui_state.search.editor.remove_character(change.cursor)
-                self._update_search(self.ui_state.search.editor.get_data())
+                self.ui_state.filter.editor.remove_character(change.cursor)
+                self._update_filter(self.ui_state.filter.editor.get_data())
         elif isinstance(change, ch.SetCursor):
             if self.ui_state.mode == Mode.EditNode:
                 self.ui_state.node_edit.text_editor.cursor = change.cursor
             else:
-                self.ui_state.search.editor.cursor = change.cursor
+                self.ui_state.filter.editor.cursor = change.cursor
         else:
             raise Exception(f'Unhandled change: {change}')
 
-    def _update_search(self, text: str):
-        asyncio.get_event_loop().create_task(self._update_search_async(text))
+    def _update_filter(self, text: str):
+        asyncio.get_event_loop().create_task(self._update_filter_async(text))
 
-    async def _update_search_async(self, text: str):
+    async def _update_filter_async(self, text: str):
         if not text:
-            self.ui_state.search.matched_node_ids = None
+            self.ui_state.filter.matched_node_ids = None
         else:
             matching_node_ids = await self.db_commands.enqueue_database_transaction(
                     db.get_nodes_matching_text,
                     args=[consts.ROOT_NODE_ID, text]
             )
-            self.ui_state.search.matched_node_ids = matching_node_ids
+            self.ui_state.filter.matched_node_ids = matching_node_ids
         gls.null_event_required = True
         self._ensure_something_selected()
 
     def _ensure_something_selected(self):
-        if not self.ui_state.search.is_visible(self.selection.selected_node_id):
+        if not self.ui_state.filter.is_visible(self.selection.selected_node_id):
             if first_child := self.node_tree.tree.get_first_child(self.node_tree.root_node):
                 self.selection.selected_node_id = first_child
                 self.selection.select_next_visible_node()
