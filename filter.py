@@ -1,8 +1,8 @@
 
 from typing import *
 
+from datastructures.text_editor import TextEditor
 from nodes.node_types import NodeId
-from ui.text_editor import TextEditor
 
 
 class Filter:

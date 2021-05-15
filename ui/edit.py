@@ -1,5 +1,5 @@
 
-from ui.text_editor import TextEditor
+from datastructures.text_editor import TextEditor
 
 
 class Edit:

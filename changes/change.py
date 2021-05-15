@@ -3,10 +3,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import *
 
+from datastructures.text_editor import Cursor
 from enums import Mode, TreeLink
 from nodes.node_types import NodeId
 from ui.node_path import NodePath
-from ui.text_editor import Cursor
 
 
 class Change:

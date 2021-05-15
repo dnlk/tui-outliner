@@ -7,13 +7,13 @@ from asciimatics import screen
 import consts
 
 from datastructures.linked_list import LinkedList, DefaultId, DefaultIdFactory
+from datastructures.text_editor import TextFormat
 import enums
 from ext import func
 from ext.geometry import Coord
 from nodes.node_tree import NodeTree
 from nodes.node_types import NodeId
 from ui.selection import Selection
-from ui.text_editor import TextFormat
 from ui.ui import UIState
 from view.color import Color
 from view.text import TextSnippet, Line, simple_line
