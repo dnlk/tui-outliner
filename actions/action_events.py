@@ -15,7 +15,7 @@ class ActionEventAsync:
 
     def _get_navigate_action(self, key_event: KeyEvent):
 
-        if key_event == Key.ESCAPE:
+        if key_event == Key.E:
             return actions.ChangeMode(Mode.EditNode)
         elif key_event == Key.S:
             return actions.ChangeMode(Mode.Filter)
@@ -23,9 +23,9 @@ class ActionEventAsync:
             return actions.NavigateDown(1)
         elif key_event == Key.UP:
             return actions.NavigateUp(1)
-        elif key_event == (Key.DOWN, Control):
+        elif key_event == (Key.DOWN, Shift):
             return actions.MoveSelectedNodeDown()
-        elif key_event == (Key.UP, Control):
+        elif key_event == (Key.UP, Shift):
             return actions.MoveSelectedNodeUp()
         elif key_event == Key.TAB:
             return actions.TabNode()
@@ -51,7 +51,7 @@ class ActionEventAsync:
             print(f'Unhandled key event: {key_event}')
 
     def _get_edit_action(self, key_event: KeyEvent):
-        if key_event == Key.ESCAPE:
+        if key_event == (Key.Q, Control):
             return actions.ChangeMode(Mode.Navigate)
         elif key_event == Key.LEFT:
             return actions.CursorDecrement()
@@ -75,7 +75,7 @@ class ActionEventAsync:
             print(f'Unhandled key event: {key_event}')
 
     def _get_filter_action(self, key_event: KeyEvent):
-        if key_event == Key.ESCAPE:
+        if key_event == (Key.Q, Control):
             return actions.ChangeMode(Mode.Navigate)
         else:
             return self._get_edit_action(key_event)
