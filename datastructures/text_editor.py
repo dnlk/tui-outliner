@@ -290,13 +290,16 @@ class TextEditor:
     calculate_cursor: CalculateCursor
 
     def __init__(self, text: str):
-        self.paragraphs = LinkedListParagraphs(Paragraph(p) for p in text.split('\n'))
-        self.cursor = Cursor(self.paragraphs.first, 0)
-        self.calculate_cursor = CalculateCursor(self)
+        self.reset(text)
 
     @property
     def active_paragraph(self) -> Paragraph:
         return self.paragraphs[self.cursor.p_id]
+
+    def reset(self, text: str):
+        self.paragraphs = LinkedListParagraphs(Paragraph(p) for p in text.split('\n'))
+        self.cursor = Cursor(self.paragraphs.first, 0)
+        self.calculate_cursor = CalculateCursor(self)
 
     def add_character(self, c: str, cursor: Cursor):
         self.paragraphs[cursor.p_id].add_character(c, cursor.offset)

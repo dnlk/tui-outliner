@@ -10,11 +10,19 @@ from ui.node_path import NodePath
 
 
 class Change:
+    mode: Mode = Mode.All
+
+    def with_mode(self, mode: Mode) -> 'Change':
+        self.mode = mode
+        return self
+
     def __hash__(self):
         return self.__class__.__name__
 
 
 class ChangeHandler(Protocol):
+    mode: Mode
+
     def handle_change(self, change: Change):
         ...
 
@@ -22,16 +30,19 @@ class ChangeHandler(Protocol):
 class ChangeNotifier:
 
     def __init__(self):
-        self._handlers: Dict[Type[Change], ChangeHandler] = {}
+        self._handlers: Dict[Tuple[Mode, Type[Change]], ChangeHandler] = {}
 
     def register(self, handler: ChangeHandler, change_type: Type[Change]):
-        assert change_type not in self._handlers
-        self._handlers[change_type] = handler
+        key = (handler.mode, change_type)
+        assert key not in self._handlers
+        self._handlers[key] = handler
 
     def notify(self, change: Change):
-        change_type = type(change)
-        assert change_type in self._handlers
-        self._handlers[change_type].handle_change(change)
+        key = (change.mode, type(change))
+        if key not in self._handlers:
+            key = (Mode.All, type(change))
+        assert key in self._handlers
+        self._handlers[key].handle_change(change)
 
     def notify_changes(self, changes: List[Change]):
         for ch in changes:
@@ -146,3 +157,8 @@ class SetNodePath(Change):
 @dataclass
 class ScrollAdjust(Change):
     scroll_diff: int
+
+
+@dataclass
+class UpdateNodeFilter(Change):
+    text: str

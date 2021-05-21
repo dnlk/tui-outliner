@@ -1,4 +1,5 @@
 
+from changes.change import ChangeNotifier
 from view.layout import Height, Layout
 from view.components.lines import Lines
 from view.components.scrollable_container import ScrollableLines
@@ -13,6 +14,7 @@ def get_layout(
         breadcrumbs_data_provider: BreadcrumbsDataProvider,
         node_tree_data_provider: NodeTreeDataProvider,
         filter_data_provider: FilterDataProvider,
+        change_notifier: ChangeNotifier
 ):
 
     return Layout(
@@ -20,7 +22,7 @@ def get_layout(
         height=height,
         components=[
             Lines(node_tree_data_provider.node_sub_tree_header_data_provider, width=width),
-            ScrollableLines(node_tree_data_provider, width=width, height=Height.Fill),
+            ScrollableLines(change_notifier, node_tree_data_provider, width=width, height=Height.Fill),
             Lines(breadcrumbs_data_provider, width=width),
             Lines(filter_data_provider, width=width),
         ]

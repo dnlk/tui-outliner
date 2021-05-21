@@ -1,9 +1,8 @@
 
 from typing import *
 
-from globals import change_notifier
-
-from changes.change import Change, ScrollAdjust
+from changes.change import Change, ChangeNotifier, ScrollAdjust
+from enums import Mode
 from ext import maths
 from view.layout import Height
 from view.text import Line
@@ -33,7 +32,9 @@ class ScrollableLines:
     assigned_y: int
     assigned_height: int
 
-    def __init__(self, line_provider: LineProvider, width, height):
+    mode: Mode = Mode.All
+
+    def __init__(self, change_notifier: ChangeNotifier, line_provider: LineProvider, width, height):
         self.line_provider = line_provider
         self.width = width
         self.height = height

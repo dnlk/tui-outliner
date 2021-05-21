@@ -1,35 +1,46 @@
 
-from typing import List
+from typing import *
 
 from actions import actions as act
+from actions.notifier import ActionNotifier, ChangeAction
 from changes import change as ch
 from ui.edit import Edit
 from enums import TreeLink, Mode
 from nodes import node as nd
-from nodes.node_tree import NodeTree
 from ui.node_path import BreadCrumb
-from ui.selection import Selection
 from ui.ui import UIState
-
-
-class ChangeAction:
-    def __init__(self, changes: List[ch.Change], action: act.Action):
-        self.changes = changes
-        self.action = action
 
 
 class ActionToChange:
 
     node_edit: Edit
+    mode = Mode.All
 
-    def __init__(self, node_tree: NodeTree, selection: Selection, node_edit: Edit, screen, ui_state: UIState):
-        self.node_tree = node_tree
-        self.selection = selection
-        self.node_edit = node_edit
-        self.screen = screen
+    def __init__(self, actions_notifier: ActionNotifier, ui_state: UIState):
+        self.node_tree = ui_state.node_tree
+        self.selection = ui_state.selection
+        self.node_edit = ui_state.node_edit
+        self.screen = ui_state.screen
         self.ui_state = ui_state
 
-    def determine_changes(self, action) -> ChangeAction:
+        actions_notifier.register(self, act.ChangeMode)
+        actions_notifier.register(self, act.NavigateUp)
+        actions_notifier.register(self, act.NavigateDown)
+        actions_notifier.register(self, act.MoveSelectedNodeUp)
+        actions_notifier.register(self, act.MoveSelectedNodeDown)
+        actions_notifier.register(self, act.NewNodeNextSibling)
+        actions_notifier.register(self, act.TabNode)
+        actions_notifier.register(self, act.UntabNode)
+        actions_notifier.register(self, act.DeleteSelectedNodeAndSelectNext)
+        actions_notifier.register(self, act.DiveIntoSelectedNode)
+        actions_notifier.register(self, act.ClimbOutOfNode)
+        actions_notifier.register(self, act.ToggleNodeExpanded)
+        actions_notifier.register(self, act.ScrollDown)
+        actions_notifier.register(self, act.ScrollUp)
+
+        actions_notifier.register(self, act.NoOp)
+
+    def determine_changes_from_action(self, action: act.Action) -> ChangeAction:
         changes: List[ch.Change] = []
         if action.is_type(act.ChangeMode):
             changes.append(ch.ChangeMode(action.mode))
@@ -74,49 +85,6 @@ class ActionToChange:
             if parent_id := self.node_tree.tree.get_parent(selected_node_id):
                 if parent_id != self.node_tree.root_node:
                     changes.append(ch.MoveNode(selected_node_id, parent_id, TreeLink.Sibling))
-        elif action.is_type(act.AddCharacterToEdit):
-            text_editor = self._get_relevant_text_editor()
-            cursor = text_editor.cursor
-            new_cursor = text_editor.cursor.with_offset_incr(1)
-            changes.append(ch.AddCharacter(cursor, action.char))
-            changes.append(ch.SetCursor(new_cursor))
-        elif action.is_type(act.FinishEditing):
-            changes.append(ch.ChangeMode(Mode.Navigate))
-            changes.append(ch.SetNodeText(self.node_edit.node_id, self.node_edit.text_editor.get_data()))
-        elif action.is_type(act.CursorIncrement):
-            text_editor = self._get_relevant_text_editor()
-            new_cursor = text_editor.calculate_cursor.get_incr_cursor()
-            changes.append(ch.SetCursor(new_cursor))
-        elif action.is_type(act.CursorDecrement):
-            text_editor = self._get_relevant_text_editor()
-            new_cursor = text_editor.calculate_cursor.get_decr_cursor()
-            changes.append(ch.SetCursor(new_cursor))
-        elif action.is_type(act.CursorRowIncrement):
-            if self.ui_state.mode == Mode.EditNode:
-                remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
-                new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_incr_row(remaining_width)
-                changes.append(ch.SetCursor(new_cursor))
-        elif action.is_type(act.CursorRowDecrement):
-            if self.ui_state.mode == Mode.EditNode:
-                remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
-                new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
-                changes.append(ch.SetCursor(new_cursor))
-        elif action.is_type(act.RemoveCharacterBeforeCursor):
-            text_editor = self._get_relevant_text_editor()
-
-            assert len(text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
-
-            if not text_editor.calculate_cursor.is_origin():
-                new_cursor = text_editor.calculate_cursor.get_decr_cursor()
-                changes.append(ch.SetCursor(new_cursor))
-                changes.append(ch.RemoveCharacter(new_cursor))
-        elif action.is_type(act.RemoveCharacterAtCursor):
-            text_editor = self._get_relevant_text_editor()
-
-            assert len(text_editor.paragraphs) <= 1, 'Support for multiple paragraphs not implemented'
-
-            cursor = text_editor.cursor
-            changes.append(ch.RemoveCharacter(cursor))
         elif (action.is_type(act.DeleteSelectedNodeAndSelectNext) or
               action.is_type(act.DeleteSelectedNodeAndSelectPrevious)):
             selected_node = self.selection.selected_node_id
@@ -162,6 +130,8 @@ class ActionToChange:
             changes.append(ch.ScrollAdjust(1))
         elif action.is_type(act.ScrollUp):
             changes.append(ch.ScrollAdjust(-1))
+        elif action.is_type(act.NoOp):
+            ...
         else:
             print(f'Unhandled action: {action}')
 
@@ -174,11 +144,3 @@ class ActionToChange:
     @property
     def selected_node(self):
         return self.node_tree.get_node(self.selected_id)
-
-    def _get_relevant_text_editor(self):
-        if self.ui_state.mode == Mode.EditNode:
-            return self.ui_state.node_edit.text_editor
-        elif self.ui_state.mode == Mode.Filter:
-            return self.ui_state.filter.editor
-        else:
-            assert False

@@ -5,6 +5,8 @@ from enums import Mode
 
 
 class Action:
+    mode_origin: Mode = Mode.All
+
     def is_type(self, cls):
         return isinstance(self, cls)
 

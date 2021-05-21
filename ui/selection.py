@@ -81,3 +81,9 @@ class Selection:
         while node_id := self.get_previous_from(node_id):
             if self.filter.is_visible(node_id):
                 return node_id
+
+    def ensure_something_selected(self):
+        if not self.filter.is_visible(self.selected_node_id):
+            if first_child := self.node_tree.tree.get_first_child(self.node_tree.root_node):
+                self.selected_node_id = first_child
+                self.select_next_visible_node()

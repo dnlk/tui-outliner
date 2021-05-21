@@ -13,8 +13,8 @@ class ActionEventAsync:
         self.keyboard_event_async = KeyboardEventAsync(WindowsKeyEventReader())
         self.ui_state: UIState = ui_state
 
-    def _get_navigate_action(self, key_event: KeyEvent):
-
+    @staticmethod
+    def _get_navigate_action(key_event: KeyEvent):
         if key_event == Key.E:
             return actions.ChangeMode(Mode.EditNode)
         elif key_event == Key.S:
@@ -50,7 +50,8 @@ class ActionEventAsync:
         else:
             print(f'Unhandled key event: {key_event}')
 
-    def _get_edit_action(self, key_event: KeyEvent):
+    @staticmethod
+    def _get_edit_action(key_event: KeyEvent):
         if key_event == (Key.Q, Control):
             return actions.ChangeMode(Mode.Navigate)
         elif key_event == Key.LEFT:
@@ -69,16 +70,22 @@ class ActionEventAsync:
             return actions.AddCharacterToEdit(' ')
         elif key_event == Key.RETURN:
             return actions.FinishEditing()
+        elif key_event in [
+            Key.ESCAPE
+        ]:
+            # Ignore these keys
+            return
         elif key_event.char:
             return actions.AddCharacterToEdit(key_event.char)
         else:
             print(f'Unhandled key event: {key_event}')
 
-    def _get_filter_action(self, key_event: KeyEvent):
+    @classmethod
+    def _get_filter_action(cls, key_event: KeyEvent):
         if key_event == (Key.Q, Control):
             return actions.ChangeMode(Mode.Navigate)
         else:
-            return self._get_edit_action(key_event)
+            return cls._get_edit_action(key_event)
 
     async def next_action(self):
         next_key = await self.keyboard_event_async.next_key()
@@ -88,8 +95,17 @@ class ActionEventAsync:
         if next_key == Key.NULL:
             return actions.NoOp()
         elif self.ui_state.mode == Mode.Navigate:
-            return self._get_navigate_action(next_key)
+            action = self._get_navigate_action(next_key)
+            if action:
+                action.mode_origin = Mode.Navigate
+                return action
         elif self.ui_state.mode == Mode.EditNode:
-            return self._get_edit_action(next_key)
+            action = self._get_edit_action(next_key)
+            if action:
+                action.mode_origin = Mode.EditNode
+                return action
         elif self.ui_state.mode == Mode.Filter:
-            return self._get_filter_action(next_key)
+            action = self._get_filter_action(next_key)
+            if action:
+                action.mode_origin = Mode.Filter
+                return action

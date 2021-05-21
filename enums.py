@@ -8,9 +8,10 @@ class NodeType(enum.Enum):
 
 
 class Mode(enum.Enum):
-    Navigate = 0
-    EditNode = 1
-    Filter = 2
+    All = 0
+    Navigate = 1
+    EditNode = 2
+    Filter = 3
 
 
 class TreeLink(enum.Enum):
