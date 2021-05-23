@@ -2,15 +2,14 @@
 from enums import Mode
 from events.keyboard_events import KeyboardEventAsync
 from events.keys import Key, KeyEvent, Shift, Control
-from events.windows_keyboard_events import WindowsKeyEventReader
 from ui.ui import UIState
 
 from . import actions
 
 
 class ActionEventAsync:
-    def __init__(self, ui_state):
-        self.keyboard_event_async = KeyboardEventAsync(WindowsKeyEventReader())
+    def __init__(self, ui_state, screen):
+        self.keyboard_event_async = KeyboardEventAsync(screen.screen_api)
         self.ui_state: UIState = ui_state
 
     @staticmethod
