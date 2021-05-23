@@ -31,6 +31,7 @@ class ActionToChange:
         actions_notifier.register(self, act.NewNodeNextSibling)
         actions_notifier.register(self, act.TabNode)
         actions_notifier.register(self, act.UntabNode)
+        actions_notifier.register(self, act.DeleteSelectedNodeAndSelectPrevious)
         actions_notifier.register(self, act.DeleteSelectedNodeAndSelectNext)
         actions_notifier.register(self, act.DiveIntoSelectedNode)
         actions_notifier.register(self, act.ClimbOutOfNode)

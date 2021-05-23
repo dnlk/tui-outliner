@@ -1,10 +1,11 @@
 
 import asyncio
 
-from asciimatics.screen import ManagedScreen, Screen as ScreenApi
+from ext.geometry import Coord
 
 import globals as gls
 
+from actions.action_events import ActionEventAsync
 from actions.notifier import ActionNotifier
 import consts
 from changes.change import ChangeNotifier
@@ -20,9 +21,12 @@ from database import async_db_commands, db, init_db
 import enums
 from nodes.node_tree import NodeTree
 from filter import Filter
+from screen.interface import WindowInterface
+from screen.window import WindowManager, WindowType
 from ui.edit import Edit
 from ui.selection import Selection
 from ui.ui import UIState
+from view.color import Color
 from view.layout import Layout
 from view.render import RenderLayout
 from view_data_provider.breadcrumbs_data_provider import BreadcrumbsDataProvider
@@ -30,11 +34,9 @@ from view_data_provider.filter_data_provider import FilterDataProvider
 from view_data_provider.node_tree_data_provider import NodeTreeDataProvider
 from view.ui_components import get_layout
 
-from actions.action_events import ActionEventAsync
-
 
 class Screen:
-    screen_api: ScreenApi
+    screen_api: WindowInterface
 
     def __init__(self, screen):
         self.screen_api = screen
@@ -69,9 +71,9 @@ async def action_event_loop(
         action_notifier: ActionNotifier,
         change_queue: asyncio.Queue,
 ):
-    screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
+    screen.screen_api.print(str(ui_state.mode), Coord(x=0, y=screen.height - 2), fg_color=Color.White, bg_color=Color.Black)
 
-    action_events = ActionEventAsync(ui_state)
+    action_events = ActionEventAsync(ui_state, screen)
 
     layout_renderer = RenderLayout(screen.screen_api, layout)
     layout_renderer.render_layout()
@@ -90,13 +92,12 @@ async def action_event_loop(
 
         layout_renderer.render_layout()
 
-        screen.screen_api.print_at(str(ui_state.mode), 0, screen.height - 2, colour=7)
-        screen.screen_api.print_at(f'Width: {screen.width}', 0, screen.height - 1, colour=7)
+        screen.screen_api.print(str(ui_state.mode), Coord(x=0, y=screen.height - 2), fg_color=Color.White, bg_color=Color.Black)
+        screen.screen_api.print(f'Width: {screen.width}', Coord(x=0, y=screen.height - 1), fg_color=Color.White, bg_color=Color.Black)
         screen.screen_api.refresh()
 
 
-async def main(db_path=None):
-    db_path = db_path or consts.DB_PATH
+async def main(db_path: str, window_type: WindowType):
     await init_db.init_if_needed(db_path)
 
     db_commands = async_db_commands.AsyncDbCommands(db_path)
@@ -110,8 +111,7 @@ async def main(db_path=None):
     selection.selected_node_id = node_tree.first_node
     node_edit = Edit()
 
-    with ManagedScreen() as _screen:
-
+    with WindowManager(window_type) as _screen:
         screen = Screen(_screen)
 
         ui_state = UIState(enums.Mode.Navigate, selection, node_edit, _filter, node_tree, screen)
@@ -155,12 +155,12 @@ async def main(db_path=None):
 
 
 if __name__ == '__main__':
-    import os
-    import sys
+    import argparse
 
-    db_path_arg = None
-    if len(sys.argv) > 1:
-        db_name = sys.argv[1]
-        db_path_arg = os.path.join(consts.DB_DIR, db_name) + '.sqlite'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--external_window', default=WindowType.same_process, action='store_const', const=WindowType.external_process)
+    parser.add_argument('-d', '--db_path', default=consts.DB_PATH)
 
-    asyncio.run(main(db_path_arg))
+    args = parser.parse_args()
+
+    asyncio.run(main(args.db_path, args.external_window))
