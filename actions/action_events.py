@@ -16,8 +16,10 @@ class ActionEventAsync:
     def _get_navigate_action(key_event: KeyEvent):
         if key_event == Key.E:
             return actions.ChangeMode(Mode.EditNode)
-        elif key_event == Key.S:
+        elif key_event == Key.F:
             return actions.ChangeMode(Mode.Filter)
+        elif key_event == Key.S:
+            return actions.ChangeMode(Mode.Search)
         elif key_event == Key.DOWN:
             return actions.NavigateDown(1)
         elif key_event == Key.UP:
@@ -42,9 +44,9 @@ class ActionEventAsync:
             return actions.ClimbOutOfNode()
         elif key_event == Key.SPACE:
             return actions.ToggleNodeExpanded()
-        elif key_event == (Key.J):
+        elif key_event == Key.J:
             return actions.ScrollDown()
-        elif key_event == (Key.K):
+        elif key_event == Key.K:
             return actions.ScrollUp()
         else:
             print(f'Unhandled key event: {key_event}')
@@ -86,6 +88,17 @@ class ActionEventAsync:
         else:
             return cls._get_edit_action(key_event)
 
+    @classmethod
+    def _get_search_action(cls, key_event: KeyEvent):
+        if key_event == (Key.Q, Control):
+            return actions.ChangeMode(Mode.Navigate)
+        elif key_event == Key.DOWN:
+            return actions.NavigateDown(1)
+        elif key_event == Key.UP:
+            return actions.NavigateUp(1)
+        else:
+            return cls._get_edit_action(key_event)
+
     async def next_action(self):
         next_key = await self.keyboard_event_async.next_key()
 
@@ -107,4 +120,9 @@ class ActionEventAsync:
             action = self._get_filter_action(next_key)
             if action:
                 action.mode_origin = Mode.Filter
+                return action
+        elif self.ui_state.mode == Mode.Search:
+            action = self._get_search_action(next_key)
+            if action:
+                action.mode_origin = Mode.Search
                 return action

@@ -35,7 +35,7 @@ class NodeFilterChangeHandler:
             self.ui_state.filter.matched_node_ids = None
         else:
             matching_node_ids = await self.db_commands.enqueue_database_transaction(
-                db.get_nodes_matching_text,
+                db.get_nodes_matching_text_including_ancestors,
                 args=[consts.ROOT_NODE_ID, text]
             )
             self.ui_state.filter.matched_node_ids = matching_node_ids

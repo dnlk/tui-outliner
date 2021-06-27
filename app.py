@@ -11,18 +11,22 @@ import consts
 from changes.change import ChangeNotifier
 from changes.handle_change import ChangeHandler
 from changes.node_filter import NodeFilterChangeHandler
+from changes.node_search import NodeSearchChangeHandler
 from changes.text_editor import TextEditorChangeHandler
 from control.change_action import ActionToChange
 from control.node_tree import NodeTreeController
 from control.node_filter import NodeFilterController
+from control.node_search import NodeSearchController
 from control.text_editor import TextEditorController
 from data.data import Data
 from database import async_db_commands, db, init_db
 import enums
 from nodes.node_tree import NodeTree
+from nodes.node_types import NodeId
 from filter import Filter
 from screen.interface import WindowInterface
 from screen.window import WindowManager, WindowType
+from search import Search
 from ui.edit import Edit
 from ui.selection import Selection
 from ui.ui import UIState
@@ -30,8 +34,8 @@ from view.color import Color
 from view.layout import Layout
 from view.render import RenderLayout
 from view_data_provider.breadcrumbs_data_provider import BreadcrumbsDataProvider
-from view_data_provider.filter_data_provider import FilterDataProvider
 from view_data_provider.node_tree_data_provider import NodeTreeDataProvider
+from view_data_provider.search_results_data_provider import SearchResultsDataProvider
 from view.ui_components import get_layout
 
 
@@ -107,6 +111,8 @@ async def main(db_path: str, window_type: WindowType):
 
     node_tree = NodeTree(all_nodes)
     _filter = Filter()
+    _search = Search(max_num_results=consts.MAX_NUM_SEARCH_RESULTS)
+
     selection = Selection(node_tree, _filter)
     selection.selected_node_id = node_tree.first_node
     node_edit = Edit()
@@ -114,39 +120,46 @@ async def main(db_path: str, window_type: WindowType):
     with WindowManager(window_type) as _screen:
         screen = Screen(_screen)
 
-        ui_state = UIState(enums.Mode.Navigate, selection, node_edit, _filter, node_tree, screen)
+        ui_state = UIState(enums.Mode.Navigate, selection, node_edit, _filter, _search, node_tree, screen)
         ui_state.mode = enums.Mode.Navigate
 
         change_queue = asyncio.Queue()
 
-        node_edit_text_data = Data[str](change_queue, '')
         filter_text_data = Data[str](change_queue, '')
+        search_text_data = Data[str](change_queue, '')
+        selected_search_item_data = Data[NodeId](change_queue, NodeId(None))
 
         node_tree_data_provider = NodeTreeDataProvider(ui_state)
         breadcrumbs_data_provider = BreadcrumbsDataProvider(ui_state)
-        filter_data_provider = FilterDataProvider(ui_state)
 
         action_notifier = ActionNotifier()
         ActionToChange(action_notifier, ui_state)
         TextEditorController(action_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, ui_state)
-        TextEditorController(action_notifier, enums.Mode.Filter, ui_state.filter.editor, ui_state)
         NodeTreeController(action_notifier, ui_state)
 
         NodeFilterController(action_notifier, filter_text_data)
+        NodeSearchController(ui_state, action_notifier, search_text_data, selected_search_item_data)
 
         change_notifier = ChangeNotifier()
         ChangeHandler(change_notifier, ui_state, db_commands)
-        TextEditorChangeHandler(change_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, node_edit_text_data)
-        TextEditorChangeHandler(change_notifier, enums.Mode.Filter, ui_state.filter.editor, filter_text_data)
+        TextEditorChangeHandler(change_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, None)
         NodeFilterChangeHandler(change_notifier, ui_state, db_commands)
+        NodeSearchChangeHandler(change_notifier, ui_state, db_commands)
+
+        search_result_data_provider = SearchResultsDataProvider(num_max_results=consts.MAX_NUM_SEARCH_RESULTS, ui_state=ui_state)
 
         layout = get_layout(
             width=screen.width,
-            height=screen.height - 2,  # Reserve two lines at the bottom for some extra logging
+            height=screen.height - 2,  # Reserve two lines at the bottom for some diagnostics
             breadcrumbs_data_provider=breadcrumbs_data_provider,
             node_tree_data_provider=node_tree_data_provider,
-            filter_data_provider=filter_data_provider,
-            change_notifier=change_notifier
+            filter_text_data=filter_text_data,
+            search_text_data=search_text_data,
+            selected_search_item_data=selected_search_item_data,
+            search_results_data_provider=search_result_data_provider,
+            action_notifier=action_notifier,
+            change_notifier=change_notifier,
+            ui_state=ui_state,
         )
 
         asyncio.create_task(process_changes(change_queue, change_notifier))

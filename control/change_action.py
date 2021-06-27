@@ -4,10 +4,10 @@ from typing import *
 from actions import actions as act
 from actions.notifier import ActionNotifier, ChangeAction
 from changes import change as ch
+from changes.changes_for_action import ChangesForAction
 from ui.edit import Edit
 from enums import TreeLink, Mode
 from nodes import node as nd
-from ui.node_path import BreadCrumb
 from ui.ui import UIState
 
 
@@ -106,18 +106,7 @@ class ActionToChange:
                 else:
                     assert False, 'Failed to determine next or previous selection'
         elif action.is_type(act.DiveIntoSelectedNode):
-            changes.append(ch.SetRootNode(self.selected_id))
-            if not (first_child_id := self.node_tree.tree.get_first_child(self.selected_id)):
-                first_child_id = nd.get_next_available_temp_id()
-                changes.append(ch.InsertNewNodeAfter(first_child_id, self.selected_id, TreeLink.Parent))
-            changes.append(ch.NewSelection(first_child_id))
-
-            node_path = self.ui_state.node_path
-            relative_path = self.node_tree.tree.get_ancestors_relative_to(self.selected_id, self.node_tree.root_node)
-            relative_path.reverse()
-            breadcrumb = BreadCrumb(self.node_tree.root_node, self.selected_id)
-            node_path.push(breadcrumb, relative_path)
-            changes.append(ch.SetNodePath(node_path))
+            ChangesForAction(self.ui_state).dive_into_node(changes, self.selected_id)
         elif action.is_type(act.ClimbOutOfNode):
             node_path = self.ui_state.node_path
             if node_path.breadcrumbs:

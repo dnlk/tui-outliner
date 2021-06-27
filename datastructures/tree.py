@@ -104,6 +104,8 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
 
     def get_ancestors_relative_to(self, _id: Id, ancestor_id: Id) -> List[Id]:
         ancestors = self.get_ancestors(_id)
+        if ancestor_id not in ancestors:
+            return []
         index = ancestors.index(ancestor_id)
         truncated_ancestors = ancestors[:index]
         return truncated_ancestors

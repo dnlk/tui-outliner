@@ -271,7 +271,7 @@ async def depth_first_traversal(cursor, root_id, callback):
         callback(_id, text, level)
 
 
-async def get_nodes_matching_text(cursor, root_id: NodeId, text: str):
+async def get_nodes_matching_text_including_ancestors(cursor, root_id: NodeId, text: str):
 
     results = set()
     stack = []
@@ -282,11 +282,26 @@ async def get_nodes_matching_text(cursor, root_id: NodeId, text: str):
         stack.append(_id)
 
         if text in node_text:
+
             for x in stack:
                 node_id = NodeId(x)
                 if node_id in reverse_new_node_mapping:
                     node_id = reverse_new_node_mapping[node_id]
                 results.add(node_id)
+
+    await depth_first_traversal(cursor, root_id, callback)
+    return results
+
+
+async def get_nodes_matching_text(cursor, root_id: NodeId, text: str):
+    results = []
+
+    def callback(_id, node_text, level):
+        if text in node_text:
+            node_id = NodeId(_id)
+            if node_id in reverse_new_node_mapping:
+                node_id = reverse_new_node_mapping[node_id]
+            results.append(node_id)
 
     await depth_first_traversal(cursor, root_id, callback)
     return results

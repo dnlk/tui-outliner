@@ -38,7 +38,7 @@ class LinkedNode:
 __last_temp_id = 0
 
 
-def get_next_available_temp_id():
+def get_next_available_temp_id() -> NodeId:
     global __last_temp_id
     __last_temp_id += 1
     return NodeId(__last_temp_id, IdType.Temp)

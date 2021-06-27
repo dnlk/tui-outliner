@@ -12,6 +12,7 @@ class Mode(enum.Enum):
     Navigate = 1
     EditNode = 2
     Filter = 3
+    Search = 4
 
 
 class TreeLink(enum.Enum):

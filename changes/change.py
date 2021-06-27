@@ -41,7 +41,7 @@ class ChangeNotifier:
         key = (change.mode, type(change))
         if key not in self._handlers:
             key = (Mode.All, type(change))
-        assert key in self._handlers
+        assert key in self._handlers, key
         self._handlers[key].handle_change(change)
 
     def notify_changes(self, changes: List[Change]):
@@ -56,35 +56,6 @@ class ChangeType(Enum):
     type = "type"
     text = "text"
     expanded = "expanded"
-
-
-class NodeChange:
-    changes: Dict[ChangeType, Any]
-
-    def __init__(self, node_id: NodeId):
-        self.node_id = node_id
-        self.changes = {}
-
-    def set_parent_id(self, node_id: Optional[NodeId]):
-        self.changes[ChangeType.parent_id] = node_id
-
-    def set_previous_sibling_id(self, node_id: Optional[NodeId]):
-        self.changes[ChangeType.previous_sibling_id] = node_id
-
-    def set_next_sibling_id(self, node_id: Optional[NodeId]):
-        self.changes[ChangeType.next_sibling_id] = node_id
-
-    def set_type(self, node_type: int):
-        self.changes[ChangeType.type] = node_type
-
-    def set_text(self, text: str):
-        self.changes[ChangeType.text] = text
-
-    def set_expanded(self, expanded: bool):
-        self.changes[ChangeType.expanded] = expanded
-
-    def __repr__(self):
-        return '[id: {}, '.format(self.node_id) + ', '.join([repr(k) + ': ' + repr(v) for k, v in self.changes.items()]) + ']'
 
 
 @dataclass
@@ -120,6 +91,11 @@ class AddCharacter(Change):
 @dataclass
 class SetCursor(Change):
     cursor: Cursor
+
+
+@dataclass
+class ClearText(Change):
+    ...
 
 
 @dataclass
@@ -162,3 +138,13 @@ class ScrollAdjust(Change):
 @dataclass
 class UpdateNodeFilter(Change):
     text: str
+
+
+@dataclass
+class UpdateNodeSearch(Change):
+    text: str
+
+
+@dataclass
+class SelectItem(Change):
+    item_id: Any
