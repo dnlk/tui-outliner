@@ -3,6 +3,7 @@ from typing import *
 
 import os
 import subprocess
+import sys
 import time
 
 from ext.geometry import Coord
@@ -11,7 +12,10 @@ import globals as gls
 
 from events.keys import Key, KeyEvent
 from screen import different_window_ipc_data as ipc_data
-from screen.windows_pipe import WindowsPipeServer
+if sys.platform == 'darwin':
+    ...
+else:
+    from screen.windows_pipe import WindowsPipeServer
 from view.color import Color
 
 

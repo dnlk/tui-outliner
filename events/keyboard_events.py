@@ -3,7 +3,9 @@ from typing import *
 
 import asyncio
 
-from events.keys import KeyEvent
+import globals
+
+from events.keys import Key, KeyEvent
 
 
 class KeyEventProvider(Protocol):
@@ -17,6 +19,9 @@ class KeyboardEventAsync:
 
     async def next_key(self):
         while True:
+            if globals.null_event_required:
+                globals.null_event_required = False
+                return KeyEvent(Key.NULL, set(), '')
             next_key = self.keyboard_events_impl.get_next_key()
             if next_key is not None:
                 return next_key

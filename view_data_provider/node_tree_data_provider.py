@@ -18,11 +18,6 @@ from ui.ui import UIState
 from view.color import Color
 from view.text import TextSnippet, Line, simple_line
 
-BLACK = screen.Screen.COLOUR_BLACK
-CYAN = screen.Screen.COLOUR_CYAN
-WHITE = screen.Screen.COLOUR_WHITE
-A_UNDERLINE = screen.Screen.A_UNDERLINE
-
 
 @dataclass
 class CachedNode:
@@ -211,6 +206,7 @@ class NodeTreeDataProvider:
             left_padding = '  '
 
         bg_color = Color.Cyan if self.selection.is_selected(node.id) else Color.Black
+        fg_color = Color.Black if self.selection.is_selected(node.id) else Color.White
 
         if self.selection.is_selected(node.id) and self.ui_state.mode == enums.Mode.EditNode:
             if node.cursor_pos is None:
@@ -220,7 +216,7 @@ class NodeTreeDataProvider:
             if relative_line_number != cursor_y:
                 return Line(
                     [
-                        TextSnippet(left_padding + line, bg_color=bg_color, fg_color=Color.White)
+                        TextSnippet(left_padding + line, bg_color=bg_color, fg_color=fg_color)
                     ],
                     x=margin_left
                 )
@@ -228,16 +224,16 @@ class NodeTreeDataProvider:
             else:
                 return Line(
                     [
-                        TextSnippet(left_padding + line[:cursor_x], bg_color=bg_color, fg_color=Color.White),
-                        TextSnippet(line[cursor_x: cursor_x + 1], bg_color=Color.White, fg_color=Color.Black),
-                        TextSnippet(line[cursor_x + 1:], bg_color=bg_color, fg_color=Color.White),
+                        TextSnippet(left_padding + line[:cursor_x], bg_color=bg_color, fg_color=fg_color),
+                        TextSnippet(line[cursor_x: cursor_x + 1], bg_color=fg_color, fg_color=bg_color),
+                        TextSnippet(line[cursor_x + 1:], bg_color=bg_color, fg_color=fg_color),
                     ],
                     x=margin_left
                 )
         else:
             return Line(
                 [
-                    TextSnippet(left_padding + line, bg_color=bg_color, fg_color=Color.White)
+                    TextSnippet(left_padding + line, bg_color=bg_color, fg_color=fg_color)
                 ],
                 x=margin_left
             )

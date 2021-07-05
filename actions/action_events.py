@@ -1,7 +1,7 @@
 
 from enums import Mode
 from events.keyboard_events import KeyboardEventAsync
-from events.keys import Key, KeyEvent, Shift, Control
+from events.keys import Key, KeyEvent, Shift
 from ui.ui import UIState
 
 from . import actions
@@ -20,13 +20,13 @@ class ActionEventAsync:
             return actions.ChangeMode(Mode.Filter)
         elif key_event == Key.S:
             return actions.ChangeMode(Mode.Search)
-        elif key_event == Key.DOWN:
+        elif key_event in (Key.J, Key.DOWN):
             return actions.NavigateDown(1)
-        elif key_event == Key.UP:
+        elif key_event in (Key.K, Key.UP):
             return actions.NavigateUp(1)
-        elif key_event == (Key.DOWN, Shift):
+        elif key_event == (Key.J, Shift):
             return actions.MoveSelectedNodeDown()
-        elif key_event == (Key.UP, Shift):
+        elif key_event == (Key.K, Shift):
             return actions.MoveSelectedNodeUp()
         elif key_event == Key.TAB:
             return actions.TabNode()
@@ -38,22 +38,22 @@ class ActionEventAsync:
             return actions.DeleteSelectedNodeAndSelectNext()
         elif key_event == Key.BACK:
             return actions.DeleteSelectedNodeAndSelectPrevious()
-        elif key_event == (Key.RIGHT, Control):
+        elif key_event in (Key.RIGHT, Key.L):
             return actions.DiveIntoSelectedNode()
-        elif key_event == (Key.LEFT, Control):
+        elif key_event in (Key.LEFT, Key.H):
             return actions.ClimbOutOfNode()
         elif key_event == Key.SPACE:
             return actions.ToggleNodeExpanded()
-        elif key_event == Key.J:
+        elif key_event == Key.PERIOD:
             return actions.ScrollDown()
-        elif key_event == Key.K:
+        elif key_event == Key.COMMA:
             return actions.ScrollUp()
         else:
             print(f'Unhandled key event: {key_event}')
 
     @staticmethod
     def _get_edit_action(key_event: KeyEvent):
-        if key_event == (Key.Q, Control):
+        if key_event == Key.ESCAPE:
             return actions.ChangeMode(Mode.Navigate)
         elif key_event == Key.LEFT:
             return actions.CursorDecrement()
@@ -83,14 +83,14 @@ class ActionEventAsync:
 
     @classmethod
     def _get_filter_action(cls, key_event: KeyEvent):
-        if key_event == (Key.Q, Control):
+        if key_event == Key.ESCAPE:
             return actions.ChangeMode(Mode.Navigate)
         else:
             return cls._get_edit_action(key_event)
 
     @classmethod
     def _get_search_action(cls, key_event: KeyEvent):
-        if key_event == (Key.Q, Control):
+        if key_event == Key.ESCAPE:
             return actions.ChangeMode(Mode.Navigate)
         elif key_event == Key.DOWN:
             return actions.NavigateDown(1)
@@ -101,8 +101,6 @@ class ActionEventAsync:
 
     async def next_action(self):
         next_key = await self.keyboard_event_async.next_key()
-
-        print(next_key)
 
         if next_key == Key.NULL:
             return actions.NoOp()

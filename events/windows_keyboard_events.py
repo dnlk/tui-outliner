@@ -67,11 +67,6 @@ class WindowsKeyEventReader:
                 return next_event
 
     def get_next_key(self) -> Optional[KeyEvent]:
-
-        if globals.null_event_required:
-            globals.null_event_required = False
-            return KeyEvent(Key.NULL, set(), '')
-
         next_event = self._get_next_event()
 
         if next_event is None:

@@ -1,9 +1,15 @@
 
+import sys
+
 from asciimatics.screen import ManagedScreen, Screen
 
 from ext.geometry import Coord
 
-from events.windows_keyboard_events import WindowsKeyEventReader
+if sys.platform == 'darwin':
+    from events.macos_keyboard_events import MacOSKeyEventReader
+    import curses
+else:
+    from events.windows_keyboard_events import WindowsKeyEventReader
 from view.color import Color
 
 
@@ -12,6 +18,8 @@ class SameWindowScreen:
         Color.White: Screen.COLOUR_WHITE,
         Color.Black: Screen.COLOUR_BLACK,
         Color.Cyan: Screen.COLOUR_CYAN,
+        Color.Yellow: Screen.COLOUR_YELLOW,
+        Color.Blue: Screen.COLOUR_BLUE,
     }
 
     def __init__(self):
@@ -21,7 +29,13 @@ class SameWindowScreen:
         self._managed_screen.__enter__()
         self.width = self._managed_screen.screen.width
         self.height = self._managed_screen.screen.height
-        self.event_reader = WindowsKeyEventReader()
+
+        if sys.platform == 'darwin':
+            # asciimatics' _screen is a curses window
+            self.event_reader = MacOSKeyEventReader(self._managed_screen.screen._screen)
+            curses.set_escdelay(50)
+        else:
+            self.event_reader = WindowsKeyEventReader()
 
         return self
 

@@ -51,6 +51,8 @@ class Key(enum.Enum):
     DELETE = 'delete'
     SPACE = 'space'
     RETURN = 'return'
+    COMMA = ','
+    PERIOD = '.'
 
     NULL = None
 
