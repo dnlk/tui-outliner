@@ -73,6 +73,7 @@ async def action_event_loop(
         screen: Screen,
         layout: Layout,
         action_notifier: ActionNotifier,
+        change_notifier: ChangeNotifier,
         change_queue: asyncio.Queue,
 ):
     screen.screen_api.print(str(ui_state.mode), Coord(x=0, y=screen.height - 2), fg_color=Color.White, bg_color=Color.Black)
@@ -88,7 +89,7 @@ async def action_event_loop(
             continue
 
         change_action = action_notifier.notify_action(next_action)
-        change_queue.put_nowait(change_action)
+        change_notifier.notify_changes(change_action.changes)
 
         if ui_state.screen_needs_reset:
             screen.screen_api.clear()
@@ -164,7 +165,7 @@ async def main(db_path: str, window_type: WindowType):
 
         asyncio.create_task(process_changes(change_queue, change_notifier))
 
-        await action_event_loop(ui_state, screen, layout, action_notifier, change_queue)
+        await action_event_loop(ui_state, screen, layout, action_notifier, change_notifier, change_queue)
 
 
 if __name__ == '__main__':
