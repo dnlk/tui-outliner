@@ -49,11 +49,12 @@ class Key(enum.Enum):
     ESCAPE = 'escape'
     BACK = 'back'
     DELETE = 'delete'
-    SPACE = 'space'
+    SPACE = ' '
     RETURN = 'return'
     COMMA = ','
     PERIOD = '.'
 
+    OTHER = 'other'
     NULL = None
 
 

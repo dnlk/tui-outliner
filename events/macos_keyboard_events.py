@@ -23,11 +23,7 @@ from .keys import Key, KeyEvent, Modifier
 
 
 def _build_key_code_mappings():
-    num_and_letter_codes = list(range(0x30, 0x30 + 10)) + list(range(0x41, 0x41 + 26))
-    num_and_letter_enums = [Key(chr(n).lower()) for n in num_and_letter_codes]
-
-    enum_to_code = dict(zip(num_and_letter_enums, num_and_letter_codes))
-    enum_to_code.update({
+    enum_to_code = {
         Key.LEFT: curses.KEY_LEFT,
         Key.UP: curses.KEY_UP,
         Key.RIGHT: curses.KEY_RIGHT,
@@ -35,15 +31,10 @@ def _build_key_code_mappings():
         Key.ESCAPE: 0x1b,
         Key.BACK: curses.KEY_BACKSPACE,
         Key.DELETE: curses.KEY_DC,
-        Key.SPACE: 32,
         Key.TAB: 9,
         Key.RETURN: 10,
-        Key.COMMA: 44,
-        Key.PERIOD: 45,
-    })
-
+    }
     code_to_enum = {v: k for k, v in enum_to_code.items()}
-
     return enum_to_code, code_to_enum
 
 
@@ -60,12 +51,15 @@ class MacOSKeyEventReader:
         if code == -1:
             return
 
+        modifiers = set()
+
         # If it's the first of a utf8-8 sequence, then put it back and get the whole unicode character
         if 0b11000000 <= code < 0b11111000:
-            self.stdscr.ungetch(code)
+            curses.ungetch(code)
             u_chr = self.stdscr.get_wch()
-            # Throw it away for now :(
-            return
+            if u_chr.isupper():
+                modifiers.add(Modifier.Shift)
+            return KeyEvent(Key.OTHER, modifiers, u_chr)
 
         if key := code_to_enum.get(code):
             return KeyEvent(key, set(), key.value)
@@ -77,15 +71,9 @@ class MacOSKeyEventReader:
             try:
                 key = Key(c.lower())
             except ValueError:
-                # Throw away if we didn't explicitly handle it in the enum. :(
-                return
+                key = Key.OTHER
 
-            modifiers = set()
             if c.isupper():
                 modifiers.add(Modifier.Shift)
 
-            return KeyEvent(key, modifiers, key.value)
-
-
-
-
+            return KeyEvent(key, modifiers, c)
