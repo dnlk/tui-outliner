@@ -32,6 +32,7 @@ def _build_key_code_mappings():
         Key.BACK: curses.KEY_BACKSPACE,
         Key.DELETE: curses.KEY_DC,
         Key.TAB: 9,
+        (Key.TAB, Modifier.Shift): curses.KEY_BTAB,
         Key.RETURN: 10,
     }
     code_to_enum = {v: k for k, v in enum_to_code.items()}
@@ -62,7 +63,10 @@ class MacOSKeyEventReader:
             return KeyEvent(Key.OTHER, modifiers, u_chr)
 
         if key := code_to_enum.get(code):
-            return KeyEvent(key, set(), key.value)
+            if isinstance(key, tuple):
+                key, modifier = key
+                modifiers.add(modifier)
+            return KeyEvent(key, modifiers, key.value)
 
         # Handle lower ascii range
         if 32 <= code <= 127:
