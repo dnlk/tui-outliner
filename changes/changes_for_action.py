@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from changes import change as ch
 import nodes.node as nd

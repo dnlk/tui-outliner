@@ -4,7 +4,7 @@ https://stackoverflow.com/questions/22362076/how-to-detect-curses-alt-key-combin
 https://invisible-island.net/ncurses/ncurses.faq.html#modified_keys
 """
 
-import globals
+from common_imports import *
 
 from win32api import STD_INPUT_HANDLE
 from win32console import GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT, ENABLE_LINE_INPUT, ENABLE_PROCESSED_INPUT
@@ -75,7 +75,7 @@ class WindowsKeyEventReader:
         next_event_virtual_keycode = next_event.VirtualKeyCode
 
         if next_event_virtual_keycode not in windows_code_to_key_enum:
-            print(f'Unhandled key: {next_event_virtual_keycode}')
+            logging.info(f'Unhandled key: {next_event_virtual_keycode}')
             return None
 
         key = windows_code_to_key_enum[next_event_virtual_keycode]

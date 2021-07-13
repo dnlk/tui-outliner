@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from actions import actions as act
 from actions.actions import Action

@@ -1,5 +1,8 @@
 
+from common_imports import *
+
 import asyncio
+import sys
 
 from ext.geometry import Coord
 
@@ -175,5 +178,10 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--db_path', default=consts.DB_PATH)
 
     args = parser.parse_args()
+
+    if args.external_window == WindowType.external_process:
+        logging.basicConfig(stream=sys.stdout, encoding='utf-8', level=logging.INFO)
+    else:
+        logging.basicConfig(filename='log', encoding='utf-8', level=logging.INFO)
 
     asyncio.run(main(args.db_path, args.external_window))

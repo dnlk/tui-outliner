@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from typing import *
+from common_imports import *
 
 from nodes.node_types import NodeId
 

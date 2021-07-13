@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from enums import Mode
 from model.selectable_list import SelectableItem

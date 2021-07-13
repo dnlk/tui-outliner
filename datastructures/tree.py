@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from ext.containers_ext import BijectiveMap
 from enums import TreeLink
@@ -237,6 +237,6 @@ class NodeTree(Generic[Id, Node]):
 
     def print_tree(self, _id, left_padding=''):
         node = self.nodes[_id]
-        print(left_padding, _id, node)
+        logging.info(left_padding, _id, node)
         for child in self.tree.get_children(_id):
             self.print_tree(child, left_padding + '  ')

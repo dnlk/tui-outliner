@@ -1,7 +1,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import *
+from common_imports import *
 
 from datastructures.text_editor import Cursor
 from enums import Mode, TreeLink

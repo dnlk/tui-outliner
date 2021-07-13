@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from changes.text_editor import TextEditorChangeHandler
 from control.text_editor import TextEditorController

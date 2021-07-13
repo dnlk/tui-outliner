@@ -1,4 +1,6 @@
 
+from common_imports import *
+
 import aiosqlite
 import os
 
@@ -19,7 +21,7 @@ async def initialize_db(conn):
 
 async def init_if_needed(db_path):
     if not os.path.exists(db_path):
-        print('Initializing db')
+        logging.info('Initializing db')
         async with aiosqlite.connect(db_path) as conn:
             cursor = await conn.cursor()
             await initialize_db(conn)

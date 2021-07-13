@@ -2,7 +2,7 @@
 import aiosqlite
 import asyncio
 from collections import deque
-from typing import *
+from common_imports import *
 
 
 class DatabaseCommand:

@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from nodes.node_tree import NodeTree
 from nodes.node_types import NodeId

@@ -1,8 +1,8 @@
 
+from common_imports import *
+
 import pickle
 import time
-
-from typing import *
 
 import pywintypes
 import win32api
@@ -67,7 +67,7 @@ class WindowsPipeAbstract:
 class WindowsPipeServer(WindowsPipeAbstract):
 
     def _setup_named_pipe(self):
-        print('Setting up named pipe')
+        logging.info('Setting up named pipe')
         self._pipe = win32pipe.CreateNamedPipe(
             self.pipe_name,  # pipeName
             win32pipe.PIPE_ACCESS_DUPLEX,  # openMode (duplex allows bidrectional comms)
@@ -83,9 +83,9 @@ class WindowsPipeServer(WindowsPipeAbstract):
         win32file.CloseHandle(self._pipe)
 
     def await_connection(self):
-        print('Waiting for client to connect')
+        logging.info('Waiting for client to connect')
         win32pipe.ConnectNamedPipe(self._pipe, None)  # blocking
-        print('Connected to client')
+        logging.info('Connected to client')
 
 
 class WindowsPipeClient(WindowsPipeAbstract):
@@ -108,7 +108,7 @@ class WindowsPipeClient(WindowsPipeAbstract):
                 break
             except pywintypes.error as e:
                 if e.args[0] == 2:
-                    print('Failed to connect to pipe. Trying again ...')
+                    logging.error('Failed to connect to pipe. Trying again ...')
                     time.sleep(.2)
                     continue
 

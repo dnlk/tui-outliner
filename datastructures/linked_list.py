@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from ext import func
 from datastructures.tree import UniqueNodeLinks

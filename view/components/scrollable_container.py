@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from changes.change import Change, ChangeNotifier, ScrollAdjust
 from enums import Mode

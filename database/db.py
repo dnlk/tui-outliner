@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from enums import NodeType, TreeLink
 from nodes.node import NodeData

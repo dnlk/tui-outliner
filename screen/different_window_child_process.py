@@ -1,4 +1,6 @@
 
+from common_imports import *
+
 import time
 
 from events.windows_keyboard_events import WindowsKeyEventReader
@@ -10,7 +12,7 @@ from screen.windows_pipe import WindowsPipeClient
 def run_pipe_client():
     try:
         with PipeClient() as client:
-            print('hi')
+            client.log('Client pipe running')
             client.run_forever()
     except Exception as e:
         import traceback
@@ -31,7 +33,7 @@ class PipeClient:
         self.screen = SameWindowScreen()
 
     def __enter__(self):
-        print('Connecting to pipe')
+        logging.info('Connecting to pipe')
         self.pipe.__enter__()
         self.log('Connected to pipe server')
         self.log('Initializing screen')
@@ -51,7 +53,7 @@ class PipeClient:
                 self.dispatch_key_events()
                 time.sleep(.01)
             except BrokenPipeError:
-                print('Broken pipe - finishing up in 2 seconds')
+                logging.error('Broken pipe - finishing up in 2 seconds')
                 time.sleep(2)
                 return
 

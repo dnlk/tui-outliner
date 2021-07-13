@@ -1,4 +1,6 @@
 
+from common_imports import *
+
 from enum import Enum
 
 from .interface import WindowInterface

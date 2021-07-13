@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from control.selectable_list import SelectableListController
 from model.selectable_list import SelectableListModel

@@ -15,7 +15,7 @@ Some resources which could be helpful:
 """
 
 
-from typing import *
+from common_imports import *
 
 import curses
 

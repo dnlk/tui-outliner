@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from view.color import Color
 from view.text import Line, simple_line

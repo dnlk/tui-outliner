@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from actions import actions as act
 from actions.notifier import ActionNotifier, ChangeAction
@@ -123,7 +123,7 @@ class ActionToChange:
         elif action.is_type(act.NoOp):
             ...
         else:
-            print(f'Unhandled action: {action}')
+            logging.info(f'Unhandled action: {action}')
 
         return ChangeAction(changes, action)
 

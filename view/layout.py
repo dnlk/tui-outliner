@@ -1,6 +1,6 @@
 
 from enum import Enum
-from typing import *
+from common_imports import *
 
 from .text import Line
 

@@ -1,4 +1,6 @@
 
+from common_imports import *
+
 from enums import Mode
 from events.keyboard_events import KeyboardEventAsync
 from events.keys import Key, KeyEvent, Shift
@@ -49,7 +51,7 @@ class ActionEventAsync:
         elif key_event == Key.COMMA:
             return actions.ScrollUp()
         else:
-            print(f'Unhandled key event: {key_event}')
+            logging.info(f'Unhandled key event: {key_event}')
 
     @staticmethod
     def _get_edit_action(key_event: KeyEvent):
@@ -79,7 +81,8 @@ class ActionEventAsync:
         elif key_event.char:
             return actions.AddCharacterToEdit(key_event.char)
         else:
-            print(f'Unhandled key event: {key_event}')
+            logging.info(f'Unhandled key event: {key_event}')
+            ...
 
     @classmethod
     def _get_filter_action(cls, key_event: KeyEvent):

@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from datastructures.text_editor import TextEditor
 from nodes.node_tree import NodeContext

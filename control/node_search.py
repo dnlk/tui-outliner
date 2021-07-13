@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 import actions.actions as act
 from actions.notifier import ActionNotifier, ChangeAction

@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from ..color import Color
 from ..layout import Height

@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 import os
 import subprocess
@@ -46,7 +46,7 @@ class DifferentWindowScreen:
             ['cmd', '/c', self._CHILD_PROCESS_SCRIPT],
             creationflags=subprocess.CREATE_NEW_CONSOLE
         )
-        print('Launched window client')
+        logging.info('Launched window client')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._pipe.__exit__(exc_type, exc_val, exc_tb)
@@ -56,7 +56,7 @@ class DifferentWindowScreen:
         if msg := self._pipe.receive_message():
             assert isinstance(msg, ipc_data.Message)
             if isinstance(msg, ipc_data.Log):
-                print(f'[window child process] {msg.text}')
+                logging.info(f'[window child process] {msg.text}')
             else:
                 return msg
 
@@ -66,10 +66,10 @@ class DifferentWindowScreen:
             return msg
 
     def _await_message_of_type(self, msg_type: Type[ipc_data.Message]):
-        print(f'Awaiting message of type: {msg_type}')
+        logging.info(f'Awaiting message of type: {msg_type}')
         while True:
             if msg := self._filter_message_of_type(msg_type):
-                print(f'Received awaited message: {msg}')
+                logging.info(f'Received awaited message: {msg}')
                 return msg
             time.sleep(.05)
 

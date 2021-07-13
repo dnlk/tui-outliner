@@ -1,5 +1,5 @@
 
-from typing import *
+from common_imports import *
 
 from data.data import Data
 from model.selectable_list import SelectableListModel
