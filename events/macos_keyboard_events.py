@@ -23,19 +23,20 @@ from .keys import Key, KeyEvent, Modifier
 
 
 def _build_key_code_mappings():
-    enum_to_code = {
-        Key.LEFT: curses.KEY_LEFT,
-        Key.UP: curses.KEY_UP,
-        Key.RIGHT: curses.KEY_RIGHT,
-        Key.DOWN: curses.KEY_DOWN,
-        Key.ESCAPE: 0x1b,
-        Key.BACK: curses.KEY_BACKSPACE,
-        Key.DELETE: curses.KEY_DC,
-        Key.TAB: 9,
-        (Key.TAB, Modifier.Shift): curses.KEY_BTAB,
-        Key.RETURN: 10,
+    code_to_enum = {
+        curses.KEY_LEFT: Key.LEFT,
+        curses.KEY_UP: Key.UP,
+        curses.KEY_RIGHT: Key.RIGHT,
+        curses.KEY_DOWN: Key.DOWN,
+        0x1b: Key.ESCAPE,
+        curses.KEY_BACKSPACE: Key.BACK,
+        127: Key.BACK,
+        curses.KEY_DC: Key.DELETE,
+        9: Key.TAB,
+        curses.KEY_BTAB: (Key.TAB, Modifier.Shift),
+        10: Key.RETURN,
     }
-    code_to_enum = {v: k for k, v in enum_to_code.items()}
+    enum_to_code = {v: k for k, v in code_to_enum.items()}
     return enum_to_code, code_to_enum
 
 
