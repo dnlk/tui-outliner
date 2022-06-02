@@ -1,4 +1,5 @@
 
+import logging
 import sys
 
 from asciimatics.screen import ManagedScreen, Screen
@@ -35,7 +36,7 @@ class SameWindowScreen:
             self.event_reader = MacOSKeyEventReader(self._managed_screen.screen._screen)
             curses.set_escdelay(50)
         else:
-            self.event_reader = WindowsKeyEventReader()
+            self.event_reader = WindowsKeyEventReader(log=logging.info)
 
         return self
 

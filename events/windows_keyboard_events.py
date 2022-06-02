@@ -7,11 +7,11 @@ https://invisible-island.net/ncurses/ncurses.faq.html#modified_keys
 from common_imports import *
 
 from win32api import STD_INPUT_HANDLE
-from win32console import GetStdHandle, KEY_EVENT, ENABLE_ECHO_INPUT, ENABLE_LINE_INPUT, ENABLE_PROCESSED_INPUT
+from win32console import GetStdHandle, KEY_EVENT, ENABLE_PROCESSED_INPUT
 import win32con
 from typing import Optional, Set
 
-from .keys import Key, KeyEvent, Modifier
+from events.keys import Key, KeyEvent, Modifier
 
 
 def _build_virtual_key_code_mappings():
@@ -52,10 +52,17 @@ def _extract_modifiers(key_event) -> Set[Modifier]:
 
 
 class WindowsKeyEventReader:
-    def __init__(self):
+    def __init__(self, log=print):
+        # For debugging
+        self.log = log
 
         self.readHandle = GetStdHandle(STD_INPUT_HANDLE)
-        self.readHandle.SetConsoleMode(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT)
+        self.readHandle.SetConsoleMode(
+            0
+            # ENABLE_PROCESSED_INPUT lets ctrl + C interrupt the program, but for some reason this option is
+            # preventing multiple subsequent shift + char events, swallowing all but the first.
+            # | ENABLE_PROCESSED_INPUT
+        )
         self.num_windows_key_events_handled = 0
 
     def _get_next_event(self):
@@ -74,16 +81,16 @@ class WindowsKeyEventReader:
 
         next_event_virtual_keycode = next_event.VirtualKeyCode
 
-        if next_event_virtual_keycode not in windows_code_to_key_enum:
-            logging.info(f'Unhandled key: {next_event_virtual_keycode}')
-            return None
-
-        key = windows_code_to_key_enum[next_event_virtual_keycode]
+        key = windows_code_to_key_enum.get(next_event_virtual_keycode, Key.OTHER)
         modifiers = _extract_modifiers(next_event)
         char = next_event.Char
         char = char if not (len(char) == 1 and char[0] == '\x00') else ''
 
-        return KeyEvent(key, modifiers, char)
+        if key == Key.OTHER and not char:
+            return
+
+        event = KeyEvent(key, modifiers, char)
+        return event
 
 
 # if __name__ == '__main__':

@@ -28,7 +28,7 @@ class PipeClient:
     pipe: WindowsPipeClient
 
     def __init__(self):
-        self.key_event_reader = WindowsKeyEventReader()
+        self.key_event_reader = WindowsKeyEventReader(log=self.log)
         self.pipe = WindowsPipeClient(ipc_data.PIPE_NAME, ipc_data.MAX_BUFFER_SIZE)
         self.screen = SameWindowScreen()
 
