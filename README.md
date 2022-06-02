@@ -1,10 +1,11 @@
+# Last tested on Windows 10, Python 3.10.4
+
 # Getting started on Windows
 - Requires Python 3.9
 - Standard setup for python project
   - `python -m venv venv`
   - `.\venv\Scripts\activate`
   - `pip install -r requirements.txt`
-  
 
 ## Running from Pycharm (recommended)
 - Set `venv` virtualenv as the python interpreter.
