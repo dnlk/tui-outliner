@@ -10,7 +10,7 @@
 ## Running from Pycharm (recommended)
 - Set `venv` virtualenv as the python interpreter.
 - Run `app.py -e` to launch a dedicated console.
-- Alternatively, run with `-e` to run the app in the IDE console output.
+- Alternatively, run with `-e` to run the app in the IDE console output. (This may be broken - see issue #2)
   - Make sure to enable "Emulate terminal in output console"
 ## Running from Windows console (cmd)
 - Nothing special - this should just work
