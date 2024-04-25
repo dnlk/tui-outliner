@@ -60,11 +60,15 @@ class Paragraph:
     def remove_character(self, char_offset):
         self.text = self.text[:char_offset] + self.text[char_offset + 1:]
 
-    def num_rows(self, row_width):
+    def num_rows(self, row_width) -> int:
         return max(1, len(self.text) // row_width)
 
-    def num_chars(self):
+    def num_chars(self) -> int:
         return len(self.text)
+
+    def get_char(self, pos: int) -> str | None:
+        if pos < len(self.text):
+            return self.text[pos]
 
 
 class ParagraphId(int):
@@ -167,6 +171,9 @@ class Cursor:
     def __eq__(self, other: 'Cursor'):
         return self.p_id == other.p_id and self.offset == other.offset
 
+    def __repr__(self):
+        return f'p_id: {self.p_id}, offset: {self.offset}'
+
 
 class CalculateCursor:
     text_editor: 'TextEditor'
@@ -237,27 +244,67 @@ class CalculateCursor:
                 p.num_chars()
             )
 
-    def is_origin(self):
-        return self.cursor.offset == 0
+    def is_origin(self, cursor: Cursor = None):
+        if cursor is None:
+            cursor = self.cursor
 
-    def is_end(self):
-        return self.cursor.offset == self.paragraph.num_chars()
+        return cursor.offset == 0
 
-    def get_incr_cursor(self) -> Cursor:
-        if not self.is_end():
-            return self.cursor.with_offset(self.cursor.offset + 1)
-        elif next_paragraph_id := self.paragraphs.get_next(self.cursor.p_id):
+    def is_end(self, cursor: Cursor = None):
+        if cursor is None:
+            cursor = self.cursor
+
+        return cursor.offset == self.paragraphs[cursor.p_id].num_chars()
+
+    def get_incr_cursor(self, cursor: Cursor = None) -> Cursor:
+        if cursor is None:
+            cursor = self.cursor
+
+        if not self.is_end(cursor=cursor):
+            return cursor.with_offset(cursor.offset + 1)
+        elif next_paragraph_id := self.paragraphs.get_next(cursor.p_id):
             return self.get_paragraph_origin(next_paragraph_id)
         else:
-            return self.cursor
+            return cursor
 
-    def get_decr_cursor(self) -> Cursor:
+    def get_decr_cursor(self, cursor: Cursor = None) -> Cursor:
+        if cursor is None:
+            cursor = self.cursor
+
         if not self.is_origin():
-            return self.cursor.with_offset(self.cursor.offset - 1)
-        elif prev_p_id := self.paragraphs.get_previous(self.cursor.p_id):
+            return cursor.with_offset(cursor.offset - 1)
+        elif prev_p_id := self.paragraphs.get_previous(cursor.p_id):
             return self.get_paragraph_end(prev_p_id)
         else:
-            return self.cursor
+            return cursor
+
+    def get_incr_word_cursor(self) -> Cursor:
+        # Keep incrementing until the cursor is at a space character, or at a new paragraph, or at the end
+        original_p = self.cursor.p_id
+        cursor = self.cursor
+        while True:
+            new_cursor = self.get_incr_cursor(cursor=cursor)
+            if self.is_end(cursor=new_cursor):
+                return new_cursor
+            elif self.text_editor.get_character(new_cursor) == ' ':
+                return new_cursor
+            elif new_cursor.p_id != original_p:
+                return new_cursor
+            cursor = new_cursor
+
+    def get_decr_word_cursor(self) -> Cursor:
+        # Keep decrementing until the cursor is at a space character, or at a new paragraph, or at the beginning
+        original_p = self.cursor.p_id
+        cursor = self.cursor
+        while True:
+            new_cursor = self.get_decr_cursor(cursor=cursor)
+            if self.is_origin(cursor=new_cursor):
+                return new_cursor
+            elif self.text_editor.get_character(new_cursor) == ' ':
+                return new_cursor
+            elif new_cursor.p_id != original_p:
+                return new_cursor
+            cursor = new_cursor
 
     def __get_corrected_cursor_for_coord(self, width: int, coord: Coord) -> Cursor:
         lines = TextFormat(self.paragraph.text, width).get_lines()
@@ -295,6 +342,9 @@ class TextEditor:
     @property
     def active_paragraph(self) -> Paragraph:
         return self.paragraphs[self.cursor.p_id]
+
+    def get_character(self, cursor: Cursor) -> str | None:
+        return self.paragraphs[cursor.p_id].get_char(cursor.offset)
 
     def reset(self, text: str):
         self.paragraphs = LinkedListParagraphs(Paragraph(p) for p in text.split('\n'))

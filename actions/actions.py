@@ -66,6 +66,16 @@ class CursorDecrement(Action):
 
 
 @dataclass
+class CursorIncrementWord(Action):
+    pass
+
+
+@dataclass
+class CursorDecrementWord(Action):
+    pass
+
+
+@dataclass
 class CursorRowIncrement(Action):
     pass
 

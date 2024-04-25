@@ -20,6 +20,8 @@ class TextEditorController:
         action_notifier.register(self, act.AddCharacterToEdit)
         action_notifier.register(self, act.CursorIncrement)
         action_notifier.register(self, act.CursorDecrement)
+        action_notifier.register(self, act.CursorIncrementWord)
+        action_notifier.register(self, act.CursorDecrementWord)
         action_notifier.register(self, act.CursorRowIncrement)
         action_notifier.register(self, act.CursorRowDecrement)
         action_notifier.register(self, act.RemoveCharacterBeforeCursor)
@@ -37,6 +39,12 @@ class TextEditorController:
             changes.append(ch.SetCursor(new_cursor).with_mode(self.mode))
         elif isinstance(action, act.CursorDecrement):
             new_cursor = self.text_editor.calculate_cursor.get_decr_cursor()
+            changes.append(ch.SetCursor(new_cursor).with_mode(self.mode))
+        elif isinstance(action, act.CursorIncrementWord):
+            new_cursor = self.text_editor.calculate_cursor.get_incr_word_cursor()
+            changes.append(ch.SetCursor(new_cursor).with_mode(self.mode))
+        elif isinstance(action, act.CursorDecrementWord):
+            new_cursor = self.text_editor.calculate_cursor.get_decr_word_cursor()
             changes.append(ch.SetCursor(new_cursor).with_mode(self.mode))
         elif isinstance(action, act.CursorRowIncrement):
             if self.ui_state.mode == Mode.EditNode:

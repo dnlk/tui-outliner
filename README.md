@@ -40,7 +40,6 @@
 - Shortcuts to nodes
 - It's annoying to accidentally hit tab and the above node gets expanded
 - Add shortcut to jump to end of text when edditing
-- Add shortcut to move across blocks of words, as with "ctrl + left/right" in many apps
 - Add word delete functionality
 - Add numbered bullets
 - Block select in tree

@@ -3,7 +3,7 @@ from common_imports import *
 
 from enums import Mode
 from events.keyboard_events import KeyboardEventAsync
-from events.keys import Key, KeyEvent, Shift
+from events.keys import Key, KeyEvent, Shift, Control
 from ui.ui import UIState
 
 from . import actions
@@ -65,6 +65,10 @@ class ActionEventAsync:
             return actions.CursorRowIncrement()
         elif key_event == Key.UP:
             return actions.CursorRowDecrement()
+        elif key_event == (Key.LEFT, Control):
+            return actions.CursorDecrementWord()
+        elif key_event == (Key.RIGHT, Control):
+            return actions.CursorIncrementWord()
         elif key_event == Key.BACK:
             return actions.RemoveCharacterBeforeCursor()
         elif key_event == Key.DELETE:
