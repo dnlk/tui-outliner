@@ -1,3 +1,4 @@
+import os
 
 from common_imports import *
 
@@ -22,7 +23,7 @@ from control.node_filter import NodeFilterController
 from control.node_search import NodeSearchController
 from control.text_editor import TextEditorController
 from data.data import Data
-from database import async_db_commands, db, init_db
+from database import async_db_commands, db, backup, init_db
 import enums
 from nodes.node_tree import NodeTree
 from nodes.node_types import NodeId
@@ -183,5 +184,8 @@ if __name__ == '__main__':
         logging.basicConfig(stream=sys.stdout, encoding='utf-8', level=logging.INFO)
     else:
         logging.basicConfig(filename='log', encoding='utf-8', level=logging.INFO)
+
+    if os.path.exists(consts.DB_PATH):
+        backup.backup(consts.DB_PATH)
 
     asyncio.run(main(args.db_path, args.external_window))

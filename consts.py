@@ -8,3 +8,4 @@ SCHEMA_PATH = os.path.join(DB_DIR, 'schema')
 ROOT_NODE_ID = -1
 ROOT_NODE_TEXT = 'ROOT'
 MAX_NUM_SEARCH_RESULTS = 4
+BACKUPS_DIR = os.path.join(DB_DIR, 'backups')
