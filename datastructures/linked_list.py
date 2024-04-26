@@ -49,12 +49,8 @@ class Items(Dict[Id, Item]):
         return super().__setitem__(key, value)
 
 
-X = TypeVar('X', bound=IdFactory)
-
-
-class LinkedList(Generic[Id, X, Item]):
-
-    _links: UniqueNodeLinks[Id, Item]
+class LinkedList(Generic[Id, Item]):
+    _links: UniqueNodeLinks[Id, None]
     _id_factory: Union[IdFactory[Id], DefaultIdFactory]
     items: Items[Id, Item]
     first: Id
@@ -70,19 +66,25 @@ class LinkedList(Generic[Id, X, Item]):
         for i in items:
             self.add_to_end(i)
 
-    def add_to_end(self, i: Item) -> Id:
-        new_id = self._id_factory.make_unique_id()
-        self.items[new_id] = i
+    def add_to_end(self, item: Item) -> Id:
         if not self.first:
+            new_id = self._id_factory.make_unique_id()
             self.first = self.last = new_id
+            self.items[new_id] = item
         else:
-            self.insert_after(new_id, self.last)
-            self.last = new_id
+            self.insert_item_after(self.last, item)
 
-        return new_id
+        return self.last
 
     def insert_after(self, new_id: Id, previous_id: Id):
-        self._links.add_link(previous_id, new_id, link_type=None)
+        self._links.insert_after(new_id, previous_id, None, None)
+        if previous_id == self.last:
+            self.last = new_id
+
+    def insert_item_after(self, previous_id: Id, item: Item):
+        new_id = self._id_factory.make_unique_id()
+        self.insert_after(new_id, previous_id)
+        self.items[new_id] = item
 
     def get_next(self, _id: Id) -> Optional[Id]:
         return self._links.get_next(_id, None)
@@ -104,7 +106,13 @@ class LinkedList(Generic[Id, X, Item]):
 
     __iter__: Iterable[Id] = get_ordered_ids
 
-    def __getitem__(self, item: Id):
+    def iter_values(self):
+        return [self[_id] for _id in self]
+
+    def iter_items(self):
+        return [(_id, self[_id]) for _id in self]
+
+    def __getitem__(self, item: Id) -> Item:
         return self.items.get(item)
 
     def __len__(self):

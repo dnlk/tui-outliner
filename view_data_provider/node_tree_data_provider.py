@@ -37,7 +37,7 @@ class FormattedLine:
     node: CachedNode
 
 
-class FormattedNodeCache(LinkedList[DefaultId, DefaultIdFactory, CachedNode]):
+class FormattedNodeCache(LinkedList[DefaultId, CachedNode]):
 
     def __init__(self, selection: Selection, *args, **kwargs):
         super().__init__(*args, **kwargs)

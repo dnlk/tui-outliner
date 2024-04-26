@@ -18,6 +18,13 @@ def iterate(func, exit_condition, initial_value, *, include_first, include_last)
     return results
 
 
+def foldl(f, seq, initial):
+    result = initial
+    for item in seq:
+        result = f(item, result)
+    return result
+
+
 def lazy_accumulate(f, acc, seq):
     for item in seq:
         acc = f(item, acc)

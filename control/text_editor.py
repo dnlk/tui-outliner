@@ -26,6 +26,7 @@ class TextEditorController:
         action_notifier.register(self, act.CursorRowDecrement)
         action_notifier.register(self, act.RemoveCharacterBeforeCursor)
         action_notifier.register(self, act.RemoveCharacterAtCursor)
+        action_notifier.register(self, act.NewParagraphAtCursor)
 
     def determine_changes_from_action(self, action: act.Action) -> ChangeAction:
         changes: List[ch.Change] = []
@@ -68,5 +69,9 @@ class TextEditorController:
 
             cursor = self.text_editor.cursor
             changes.append(ch.RemoveCharacter(cursor).with_mode(self.mode))
+        elif isinstance(action, act.NewParagraphAtCursor):
+            if self.mode == Mode.EditNode:
+                cursor = self.text_editor.cursor
+                changes.append(ch.NewParagraph(cursor).with_mode(self.mode))
 
         return ChangeAction(changes, action)

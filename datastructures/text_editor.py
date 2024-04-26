@@ -1,5 +1,7 @@
+import operator
 
 from common_imports import *
+from datastructures import linked_list
 
 from ext import func
 from ext.geometry import Coord
@@ -18,10 +20,18 @@ class TextFormat:
     def next_line_start(self, start_offset: int):
         max_end_offset = end_offset = start_offset + self.width
 
-        if len(self.text) <= max_end_offset:
+        this_text = self.text[start_offset:max_end_offset]
+        before_newline, *_ = this_text.split('\n', 1)
+
+        if len(before_newline) < len(this_text):
+            # There was a newline in this bit of text, so generate a new line
+            new_max_end_offset = start_offset + len(before_newline) + 1  # The \n was stripped by `str.split()`
+            assert new_max_end_offset <= max_end_offset
+            end_offset = new_max_end_offset
+        elif len(self.text) <= max_end_offset:
             end_offset = len(self.text)
         elif self.text[max_end_offset] == ' ':
-            # Bump the offset by 1 the next line is "hidden"
+            # Bump the offset by 1, so the space is "hidden"
             end_offset = max_end_offset + 1
         else:
             for end_offset in range(max_end_offset, start_offset, -1):
@@ -43,7 +53,7 @@ class TextFormat:
     def get_lines(self) -> List[str]:
         line_offsets = self.get_line_offsets()
         return [
-            self.text[begin:end]
+            self.text[begin:end].rstrip('\n')
             for begin, end
             in zip(line_offsets, line_offsets[1:] + [len(self.text)])
         ]
@@ -70,6 +80,9 @@ class Paragraph:
         if pos < len(self.text):
             return self.text[pos]
 
+    def __repr__(self):
+        return self.text
+
 
 class ParagraphId(int):
     @staticmethod
@@ -83,72 +96,25 @@ class ParagraphId(int):
         return self.is_valid()
 
 
+class PIDFactory:
+    last_unique_id = -1
+
+    def make_unique_id(self) -> ParagraphId:
+        PIDFactory.last_unique_id += 1
+        return ParagraphId(PIDFactory.last_unique_id)
+
+    def make_invalid_id(self) -> ParagraphId:
+        return ParagraphId(-1)
+
+
 class ParagraphNodes(Dict[ParagraphId, Paragraph]):
     def __setitem__(self, key, value):
         assert key not in self
         return super().__setitem__(key, value)
 
 
-class LinkedListParagraphs(UniqueNodeLinks[ParagraphId, None]):
-
-    first: ParagraphId
-    last: ParagraphId
-
-    last_unique_id = -1
-
-    @classmethod
-    def _get_unique_id(cls) -> ParagraphId:
-        cls.last_unique_id += 1
-        return ParagraphId(cls.last_unique_id)
-
-    def __init__(self, paragraphs: Iterable[Paragraph]):
-        super().__init__()
-        self.first = ParagraphId.invalid()
-        self.last = ParagraphId.invalid()
-
-        self.paragraph_map = ParagraphNodes()
-        for p in paragraphs:
-            self.add_paragraph_to_end(p)
-
-    def get_next(self, _id: ParagraphId) -> ParagraphId:
-        return super().get_next(_id, None)
-
-    def get_previous(self, _id: ParagraphId) -> ParagraphId:
-        if (previous := super().get_previous(_id)) is not None:
-            return previous[0]
-
-    def add_paragraph_to_end(self, p: Paragraph) -> ParagraphId:
-        new_id = self._get_unique_id()
-        self.paragraph_map[new_id] = p
-        if not self.first:
-            self.first = self.last = new_id
-        else:
-            self.insert_after(new_id, self.last)
-            self.last = new_id
-
-        return new_id
-
-    def insert_after(self, new_id: ParagraphId, previous_id: ParagraphId):
-        self.add_link(new_id, previous_id, link_type=None)
-
-    def get_ordered_ids(self) -> List[ParagraphId]:
-        return func.iterate(
-            self.get_next,
-            lambda _id: _id == self.last,
-            initial_value=self.first,
-            include_first=True,
-            include_last=True
-        )
-
-    def __iter__(self) -> Iterable[Paragraph]:
-        for _id in self.get_ordered_ids():
-            yield self[_id]
-
-    def __getitem__(self, item: ParagraphId):
-        return self.paragraph_map.get(item)
-
-    def __len__(self):
-        return len(self.paragraph_map)
+class ParagraphsList(linked_list.LinkedList[ParagraphId, Paragraph]):
+    pass
 
 
 class Cursor:
@@ -186,13 +152,27 @@ class CalculateCursor:
         return self.text_editor.cursor
 
     @property
-    def paragraphs(self) -> LinkedListParagraphs:
+    def paragraphs(self) -> ParagraphsList:
         return self.text_editor.paragraphs
 
     def get_cursor_coord(self, width: int) -> Coord:
-        assert len(self.paragraphs) == 1  # This is quick and dirty for the case of 1 paragraph
+        this_p_id = self.cursor.p_id
 
-        lines_offsets = TextFormat(self.paragraph.text, width).get_line_offsets()
+        def get_line_offsets(_p_id: ParagraphId):
+            return TextFormat(self.paragraphs[_p_id].text, width).get_line_offsets()
+
+        # First, add up the number of lines in the previous paragraphs
+        num_preceeding_lines = func.foldl(
+            f=lambda _p_id, acc: acc + len(get_line_offsets(_p_id)),
+            seq=func.take_until(
+                pred=lambda _p_id: _p_id == this_p_id,
+                seq=self.paragraphs.get_ordered_ids()
+            ),
+            initial=0,
+        )
+
+        # Now calculate the cursor position for this paragraph
+        lines_offsets = get_line_offsets(this_p_id)
 
         prev_line_offset = 0
         i = 0
@@ -214,7 +194,8 @@ class CalculateCursor:
             x = 0
             y += 1
 
-        return Coord(x=x, y=y)
+        # Add back in the lines from previous paragraphs
+        return Coord(x=x, y=(y + num_preceeding_lines))
 
     def get_offset_from_coord(self, width: int, coord: Coord) -> int:
         line_offsets = TextFormat(self.paragraph.text, width).get_line_offsets()
@@ -332,7 +313,7 @@ class CalculateCursor:
 
 class TextEditor:
 
-    paragraphs: LinkedListParagraphs
+    paragraphs: ParagraphsList
     cursor: Cursor
     calculate_cursor: CalculateCursor
 
@@ -347,7 +328,14 @@ class TextEditor:
         return self.paragraphs[cursor.p_id].get_char(cursor.offset)
 
     def reset(self, text: str):
-        self.paragraphs = LinkedListParagraphs(Paragraph(p) for p in text.split('\n'))
+        text_parts = text.split('\n')
+        if text_parts and text_parts[-1] == '':
+            # The last newline character shouldn't result in a blank paragraph
+            text_parts.pop()
+        if not text_parts:
+            # There should be at least one paragraph
+            text_parts = ['']
+        self.paragraphs = ParagraphsList(Paragraph(p) for p in text_parts)
         self.cursor = Cursor(self.paragraphs.first, 0)
         self.calculate_cursor = CalculateCursor(self)
 
@@ -368,13 +356,17 @@ class TextEditor:
         # else:
         #     self.cursor.paragraph.remove_character(self.cursor.paragraph_row, self.cursor.column)
 
-    # def split_paragraph_at_cursor(self):
-    #     this_paragraph = self.cursor.paragraph
-    #     char_offset = this_paragraph.get_char_offset(self.cursor.paragraph_row, self.cursor.column)
-    #     text1, text2 = this_paragraph.text[:char_offset], this_paragraph.text[char_offset:]
-    #     this_paragraph.text = text1
-    #     new_paragraph = Paragraph(text2, self.width)
-    #     self.add_paragraph_after(new_paragraph, this_paragraph)
+    def split_paragraph(self, cursor: Cursor):
+        this_paragraph = self.paragraphs[cursor.p_id]
+        text1 = this_paragraph.text[:cursor.offset]
+        text2 = this_paragraph.text[cursor.offset:]
+        this_paragraph.text = text1
+
+        # char_offset = this_paragraph.get_char_offset(self.cursor.paragraph_row, self.cursor.column)
+        # text1, text2 = this_paragraph.text[:char_offset], this_paragraph.text[char_offset:]
+        this_paragraph.text = text1
+        new_paragraph = Paragraph(text2)
+        self.paragraphs.insert_item_after(cursor.p_id, new_paragraph)
     #
     # def merge_paragraphs_at_cursor(self):
     #     this_paragraph = self.cursor.paragraph
@@ -387,4 +379,4 @@ class TextEditor:
     #     self.remove_paragraph(this_paragraph)
 
     def get_data(self):
-        return '\n'.join(p.text for p in self.paragraphs)
+        return '\n'.join(p.text for p in self.paragraphs.iter_values())

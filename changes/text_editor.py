@@ -19,6 +19,7 @@ class TextEditorChangeHandler:
         change_notifier.register(self, ch.RemoveCharacter)
         change_notifier.register(self, ch.SetCursor)
         change_notifier.register(self, ch.ClearText)
+        change_notifier.register(self, ch.NewParagraph)
 
     def handle_change(self, change: Change):
         if isinstance(change, ch.AddCharacter):
@@ -32,3 +33,5 @@ class TextEditorChangeHandler:
         elif isinstance(change, ch.ClearText):
             self.text_editor.reset('')
             self.text_edited_notify()
+        elif isinstance(change, ch.NewParagraph):
+            self.text_editor.split_paragraph(change.cursor)

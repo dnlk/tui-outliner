@@ -96,6 +96,11 @@ class RemoveCharacterAtCursor(Action):
 
 
 @dataclass
+class NewParagraphAtCursor(Action):
+    pass
+
+
+@dataclass
 class FinishEditing(Action):
     pass
 

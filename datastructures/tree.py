@@ -50,7 +50,7 @@ class UniqueNodeLinks(Generic[Id, Link]):
         self.pop_previous_link(_id)
         self.add_link(new_previous_id, _id, new_link_type)
 
-    def _insert_after(self, _id: Id, previous_id: Id, link_type: Link, bumped_link_type: Link):
+    def insert_after(self, _id: Id, previous_id: Id, link_type: Link, bumped_link_type: Link):
         next_id = self.node_links.lpop((previous_id, link_type))
         self.add_link(previous_id, _id, link_type)
         if next_id is not None:
@@ -73,7 +73,7 @@ class UniqueNodeLinks(Generic[Id, Link]):
             bumped_link_type: Link
     ):
         self._splice(_id, link_type_to_patch_though)
-        self._insert_after(_id, previous_id, link_type, bumped_link_type)
+        self.insert_after(_id, previous_id, link_type, bumped_link_type)
 
 
 class Tree(UniqueNodeLinks[Id, TreeLink]):
@@ -153,10 +153,6 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
             include_first=True,
             include_last=False
         )
-
-    def insert_after(self, _id: Id, previous_id: Id, link_type: Link) -> None:
-        bumped_link_type = TreeLink.Sibling
-        self._insert_after(_id, previous_id, link_type, bumped_link_type)
 
     def splice(self, _id: Id) -> None:
         link_type_to_patch_through = TreeLink.Sibling

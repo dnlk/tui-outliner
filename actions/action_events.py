@@ -1,4 +1,3 @@
-
 from common_imports import *
 
 from enums import Mode
@@ -77,6 +76,8 @@ class ActionEventAsync:
             return actions.AddCharacterToEdit(' ')
         elif key_event == Key.RETURN:
             return actions.FinishEditing()
+        elif key_event == (Key.RETURN, Shift):
+            return actions.NewParagraphAtCursor()
         elif key_event in [
             Key.ESCAPE
         ]:

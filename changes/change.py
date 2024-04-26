@@ -104,6 +104,11 @@ class RemoveCharacter(Change):
 
 
 @dataclass
+class NewParagraph(Change):
+    cursor: Cursor
+
+
+@dataclass
 class SetNodeText(Change):
     id: NodeId
     text: str
