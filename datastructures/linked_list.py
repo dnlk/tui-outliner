@@ -66,6 +66,9 @@ class LinkedList(Generic[Id, Item]):
         for i in items:
             self.add_to_end(i)
 
+    def make_unique_id(self) -> Id:
+        return self._id_factory.make_unique_id()
+
     def add_to_end(self, item: Item) -> Id:
         if not self.first:
             new_id = self._id_factory.make_unique_id()
@@ -81,8 +84,9 @@ class LinkedList(Generic[Id, Item]):
         if previous_id == self.last:
             self.last = new_id
 
-    def insert_item_after(self, previous_id: Id, item: Item):
-        new_id = self._id_factory.make_unique_id()
+    def insert_item_after(self, previous_id: Id, item: Item, new_id: Id | None = None):
+        if new_id is None:
+            new_id = self._id_factory.make_unique_id()
         self.insert_after(new_id, previous_id)
         self.items[new_id] = item
 

@@ -231,10 +231,6 @@ class CalculateCursor:
     def paragraph(self) -> Paragraph:
         return self.paragraphs[self.cursor.p_id]
 
-    # @property
-    # def offset(self) -> int:
-    #     return self.cursor.offset
-
     def get_paragraph_origin(self, _id: ParagraphId):
         if (p := self.paragraphs[_id]) is not None:
             return Cursor(
@@ -383,7 +379,9 @@ class TextEditor:
         # else:
         #     self.cursor.paragraph.remove_character(self.cursor.paragraph_row, self.cursor.column)
 
-    def split_paragraph(self, cursor: Cursor):
+    def split_paragraph(self, cursor: Cursor, new_id: ParagraphId | None = None):
+        if new_id is None:
+            new_id = self.paragraphs.make_unique_id()
         this_paragraph = self.paragraphs[cursor.p_id]
         text1 = this_paragraph.text[:cursor.offset]
         text2 = this_paragraph.text[cursor.offset:]
@@ -393,7 +391,7 @@ class TextEditor:
         # text1, text2 = this_paragraph.text[:char_offset], this_paragraph.text[char_offset:]
         this_paragraph.text = text1
         new_paragraph = Paragraph(text2)
-        self.paragraphs.insert_item_after(cursor.p_id, new_paragraph)
+        self.paragraphs.insert_item_after(cursor.p_id, new_paragraph, new_id=new_id)
     #
     # def merge_paragraphs_at_cursor(self):
     #     this_paragraph = self.cursor.paragraph

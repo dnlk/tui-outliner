@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from common_imports import *
 
-from datastructures.text_editor import Cursor
+from datastructures.text_editor import Cursor, ParagraphId
 from enums import Mode, TreeLink
 from nodes.node_types import NodeId
 from ui.node_path import NodePath
@@ -106,6 +106,7 @@ class RemoveCharacter(Change):
 @dataclass
 class NewParagraph(Change):
     cursor: Cursor
+    new_id: ParagraphId
 
 
 @dataclass

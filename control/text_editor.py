@@ -4,7 +4,7 @@ from common_imports import *
 from actions import actions as act
 from actions.notifier import ActionNotifier, ChangeAction
 from changes import change as ch
-from datastructures.text_editor import TextEditor
+from datastructures.text_editor import Cursor, TextEditor
 from enums import Mode
 from ui.ui import UIState
 
@@ -72,6 +72,8 @@ class TextEditorController:
         elif isinstance(action, act.NewParagraphAtCursor):
             if self.mode == Mode.EditNode:
                 cursor = self.text_editor.cursor
-                changes.append(ch.NewParagraph(cursor).with_mode(self.mode))
+                new_id = self.text_editor.paragraphs.make_unique_id()
+                changes.append(ch.NewParagraph(cursor, new_id).with_mode(self.mode))
+                changes.append(ch.SetCursor(Cursor(new_id, 0)).with_mode(self.mode))
 
         return ChangeAction(changes, action)

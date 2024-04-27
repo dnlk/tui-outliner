@@ -34,4 +34,4 @@ class TextEditorChangeHandler:
             self.text_editor.reset('')
             self.text_edited_notify()
         elif isinstance(change, ch.NewParagraph):
-            self.text_editor.split_paragraph(change.cursor)
+            self.text_editor.split_paragraph(change.cursor, change.new_id)
