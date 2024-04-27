@@ -78,12 +78,7 @@ class ActionEventAsync:
             return actions.FinishEditing()
         elif key_event == (Key.RETURN, Shift):
             return actions.NewParagraphAtCursor()
-        elif key_event in [
-            Key.ESCAPE
-        ]:
-            # Ignore these keys
-            return
-        elif key_event.char:
+        elif key_event.char and ord(key_event.char) >= 32:  # Just ignore lower ascii
             return actions.AddCharacterToEdit(key_event.char)
         else:
             logging.info(f'Unhandled key event: {key_event}')
