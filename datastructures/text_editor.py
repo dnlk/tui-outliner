@@ -15,7 +15,12 @@ class LinkedListNode:
 
 class TextFormat:
     def __init__(self, text: str, width: int):
-        self.text = text
+        # Newline characters at the end of a paragraph are "hidden". A consequence of the processing is that a newline
+        # at the very end of the block will get hidden with the preceeding text, and not display as a new blank line.
+        # To fix this, a trailing newline gets padded with a space.
+        # Probably, the text protocol should change so that each paragraph always ends with a newline character, even
+        # if it is the last paragraph.
+        self.text = text + ' ' if text.endswith('\n') else text
         self.width = width
 
     def next_line_start(self, start_offset: int):
@@ -352,9 +357,6 @@ class TextEditor:
 
     def reset(self, text: str):
         text_parts = text.split('\n')
-        if text_parts and text_parts[-1] == '':
-            # The last newline character shouldn't result in a blank paragraph
-            text_parts.pop()
         if not text_parts:
             # There should be at least one paragraph
             text_parts = ['']
