@@ -12,7 +12,7 @@ def iterate(func, exit_condition, initial_value, *, include_first, include_last)
         x = next_x
         results.append(x)
 
-    if not include_last:
+    if not include_last and len(results) > 1:
         results.pop()
 
     return results

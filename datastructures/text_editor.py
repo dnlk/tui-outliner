@@ -1,4 +1,5 @@
 import operator
+from dataclasses import dataclass
 
 from common_imports import *
 from datastructures import linked_list
@@ -64,6 +65,10 @@ class Paragraph:
     def __init__(self, text: str):
         self.text = text
 
+    def lines_start_end(self, width: int) -> List[Tuple[int, int]]:
+        line_starts = TextFormat(self.text, width).get_line_offsets()
+        return list(zip(line_starts, line_starts[1:] + [len(self.text)]))
+
     def add_character(self, char, char_offset):
         self.text = self.text[:char_offset] + char + self.text[char_offset:]
 
@@ -113,8 +118,27 @@ class ParagraphNodes(Dict[ParagraphId, Paragraph]):
         return super().__setitem__(key, value)
 
 
+@dataclass
+class Line:
+    start: int
+    end: int
+    row: int
+    p_id: ParagraphId
+
+
 class ParagraphsList(linked_list.LinkedList[ParagraphId, Paragraph]):
-    pass
+
+    def lines(self, width: int) -> List[Line]:
+        def f(p_offsets: Tuple[ParagraphId, List[Tuple[int, int]]], results: List[Line]):
+            p_id, lines_start_end = p_offsets
+            results.extend(Line(start, end, i, p_id) for i, (start, end) in enumerate(lines_start_end))
+            return results
+
+        return func.foldl(
+            f=f,
+            seq=[(p_id, self[p_id].lines_start_end(width)) for p_id in self.get_ordered_ids()],
+            initial=[],
+        )
 
 
 class Cursor:
@@ -197,8 +221,8 @@ class CalculateCursor:
         # Add back in the lines from previous paragraphs
         return Coord(x=x, y=(y + num_preceeding_lines))
 
-    def get_offset_from_coord(self, width: int, coord: Coord) -> int:
-        line_offsets = TextFormat(self.paragraph.text, width).get_line_offsets()
+    def get_offset_from_coord(self, p_id: ParagraphId, width: int, coord: Coord) -> int:
+        line_offsets = TextFormat(self.paragraphs[p_id].text, width).get_line_offsets()
         assert coord.y < len(line_offsets)
         new_offset = line_offsets[coord.y] + coord.x
         return new_offset
@@ -288,17 +312,20 @@ class CalculateCursor:
             cursor = new_cursor
 
     def __get_corrected_cursor_for_coord(self, width: int, coord: Coord) -> Cursor:
-        lines = TextFormat(self.paragraph.text, width).get_lines()
-
+        coord_y = coord.y
         if coord.y < 0:
-            return self.cursor.with_offset(0)
-        elif coord.y >= len(lines):
-            return self.get_paragraph_end(self.cursor.p_id)
+            return Cursor(self.paragraphs.first, 0)
 
-        new_y = coord.y
-        new_x = min(coord.x, len(lines[new_y]))
-        new_offset = self.get_offset_from_coord(width, Coord(x=new_x, y=new_y))
-        return self.cursor.with_offset(new_offset)
+        lines = self.paragraphs.lines(width)
+        if coord.y >= len(lines):
+            return Cursor(lines[-1].p_id, len(self.paragraphs[lines[-1].p_id].text))
+
+        line = lines[coord_y]
+
+        new_x = min(coord.x, line.end)
+        new_paragraph_y = line.row
+        new_offset = self.get_offset_from_coord(line.p_id, width, Coord(x=new_x, y=new_paragraph_y))
+        return Cursor(lines[coord_y].p_id, new_offset)
 
     def get_cursor_for_incr_row(self, width) -> Cursor:
         coord_uncorrected = self.get_cursor_coord(width)

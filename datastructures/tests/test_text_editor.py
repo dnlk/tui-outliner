@@ -97,3 +97,39 @@ def test_create_paragraph_at_cursor_starting_at_empty_paragraph():
     assert paragraphs_list[5].text == 'B'
     assert paragraphs_list[6].text == ''
     assert paragraphs_list[7].text == ''
+
+
+def test_paragraph_offsets():
+
+
+
+    paragraphs = _build_paragraphs(text_1)
+
+
+    first_p, second_p = paragraphs.iter_values()[:2]
+
+    "the first line was blank\n"
+
+
+    assert first_p.lines_start_end(width=9) == [
+        (0, 0),  # blank line
+    ]
+
+    assert second_p.lines_start_end(width=9) == [
+        (0, 10),
+        (10, 19),  # The first line expanded to "hide" the space character
+        (19, 24),
+    ]
+
+    all_offsets = list(paragraphs.lines(width=9))
+    assert all_offsets[:9] == [
+        te.Line(start=0, end=0, row=0, p_id=te.ParagraphId(0)),
+        te.Line(start=0, end=10, row=0, p_id=te.ParagraphId(1)),
+        te.Line(start=10, end=19, row=1, p_id=te.ParagraphId(1)),
+        te.Line(start=19, end=24, row=2, p_id=te.ParagraphId(1)),
+        te.Line(start=0, end=10, row=0, p_id=te.ParagraphId(2)),
+        te.Line(start=10, end=16, row=1, p_id=te.ParagraphId(2)),
+        te.Line(start=16, end=25, row=2, p_id=te.ParagraphId(2)),
+        te.Line(start=25, end=29, row=3, p_id=te.ParagraphId(2)),
+        te.Line(start=29, end=38, row=4, p_id=te.ParagraphId(2)),
+    ]

@@ -104,7 +104,7 @@ class LinkedList(Generic[Id, Item]):
     def get_ordered_nodes(self) -> Iterable[Item]:
         return (self[_id] for _id in self.get_ordered_ids())
 
-    __iter__: Iterable[Id] = get_ordered_ids
+    __iter__: Callable[[], Iterable[Id]] = get_ordered_ids
 
     def iter_values(self):
         return [self[_id] for _id in self]
