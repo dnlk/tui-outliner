@@ -145,6 +145,12 @@ class ParagraphsList(linked_list.LinkedList[ParagraphId, Paragraph]):
             initial=[],
         )
 
+    def merge(self, p_id1: ParagraphId, p_id2: ParagraphId):
+        p1 = self[p_id1]
+        p2 = self[p_id2]
+        p1.text += p2.text
+        self.remove(p_id2)
+
 
 class Cursor:
     p_id: ParagraphId
@@ -250,23 +256,29 @@ class CalculateCursor:
                 p.num_chars()
             )
 
-    def is_origin(self, cursor: Cursor = None):
+    def is_p_origin(self, cursor: Cursor = None):
         if cursor is None:
             cursor = self.cursor
 
         return cursor.offset == 0
 
-    def is_end(self, cursor: Cursor = None):
+    def is_origin(self):
+        return self.cursor.p_id == self.paragraphs.first and self.cursor.offset == 0
+
+    def is_p_end(self, cursor: Cursor = None):
         if cursor is None:
             cursor = self.cursor
 
         return cursor.offset == self.paragraphs[cursor.p_id].num_chars()
+    
+    def is_end(self):
+        return self.cursor.p_id == self.paragraphs.last and self.cursor.offset == len(self.paragraph.text)
 
     def get_incr_cursor(self, cursor: Cursor = None) -> Cursor:
         if cursor is None:
             cursor = self.cursor
 
-        if not self.is_end(cursor=cursor):
+        if not self.is_p_end(cursor=cursor):
             return cursor.with_offset(cursor.offset + 1)
         elif next_paragraph_id := self.paragraphs.get_next(cursor.p_id):
             return self.get_paragraph_origin(next_paragraph_id)
@@ -277,7 +289,7 @@ class CalculateCursor:
         if cursor is None:
             cursor = self.cursor
 
-        if not self.is_origin():
+        if not self.is_p_origin():
             return cursor.with_offset(cursor.offset - 1)
         elif prev_p_id := self.paragraphs.get_previous(cursor.p_id):
             return self.get_paragraph_end(prev_p_id)
@@ -290,7 +302,7 @@ class CalculateCursor:
         cursor = self.cursor
         while True:
             new_cursor = self.get_incr_cursor(cursor=cursor)
-            if self.is_end(cursor=new_cursor):
+            if self.is_p_end(cursor=new_cursor):
                 return new_cursor
             elif self.text_editor.get_character(new_cursor) == ' ':
                 return new_cursor
@@ -304,7 +316,7 @@ class CalculateCursor:
         cursor = self.cursor
         while True:
             new_cursor = self.get_decr_cursor(cursor=cursor)
-            if self.is_origin(cursor=new_cursor):
+            if self.is_p_origin(cursor=new_cursor):
                 return new_cursor
             elif self.text_editor.get_character(new_cursor) == ' ':
                 return new_cursor
@@ -372,15 +384,6 @@ class TextEditor:
         if cursor.offset < paragraph.num_chars():
             paragraph.remove_character(cursor.offset)
 
-        # if self.cursor.is_origin() and self.cursor.paragraph_index == 0:
-        #     return
-        # elif self.cursor.is_origin():
-        #     new_cursor = self.get_previous_paragraph(self.cursor.paragraph).end()
-        #     self.merge_paragraphs_at_cursor()
-        #     self.cursor = new_cursor
-        # else:
-        #     self.cursor.paragraph.remove_character(self.cursor.paragraph_row, self.cursor.column)
-
     def split_paragraph(self, cursor: Cursor, new_id: ParagraphId | None = None):
         if new_id is None:
             new_id = self.paragraphs.make_unique_id()
@@ -388,22 +391,8 @@ class TextEditor:
         text1 = this_paragraph.text[:cursor.offset]
         text2 = this_paragraph.text[cursor.offset:]
         this_paragraph.text = text1
-
-        # char_offset = this_paragraph.get_char_offset(self.cursor.paragraph_row, self.cursor.column)
-        # text1, text2 = this_paragraph.text[:char_offset], this_paragraph.text[char_offset:]
-        this_paragraph.text = text1
         new_paragraph = Paragraph(text2)
         self.paragraphs.insert_item_after(cursor.p_id, new_paragraph, new_id=new_id)
-    #
-    # def merge_paragraphs_at_cursor(self):
-    #     this_paragraph = self.cursor.paragraph
-    #     previous_paragraph = self.get_previous_paragraph(this_paragraph)
-    #     if not previous_paragraph:
-    #         return
-    #
-    #     new_text = previous_paragraph.text + this_paragraph.text
-    #     previous_paragraph.text = new_text
-    #     self.remove_paragraph(this_paragraph)
 
     def get_data(self):
         return '\n'.join(p.text for p in self.paragraphs.iter_values())

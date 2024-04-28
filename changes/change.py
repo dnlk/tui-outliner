@@ -110,6 +110,12 @@ class NewParagraph(Change):
 
 
 @dataclass
+class MergeParagraphs(Change):
+    p_id1: ParagraphId
+    p_id2: ParagraphId
+
+
+@dataclass
 class SetNodeText(Change):
     id: NodeId
     text: str

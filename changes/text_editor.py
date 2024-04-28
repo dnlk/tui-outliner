@@ -20,6 +20,7 @@ class TextEditorChangeHandler:
         change_notifier.register(self, ch.SetCursor)
         change_notifier.register(self, ch.ClearText)
         change_notifier.register(self, ch.NewParagraph)
+        change_notifier.register(self, ch.MergeParagraphs)
 
     def handle_change(self, change: Change):
         if isinstance(change, ch.AddCharacter):
@@ -35,3 +36,5 @@ class TextEditorChangeHandler:
             self.text_edited_notify()
         elif isinstance(change, ch.NewParagraph):
             self.text_editor.split_paragraph(change.cursor, change.new_id)
+        elif isinstance(change, ch.MergeParagraphs):
+            self.text_editor.paragraphs.merge(change.p_id1, change.p_id2)

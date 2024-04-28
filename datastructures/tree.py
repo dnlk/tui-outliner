@@ -56,10 +56,8 @@ class UniqueNodeLinks(Generic[Id, Link]):
         if next_id is not None:
             self.add_link(_id, next_id, bumped_link_type)
 
-    def _splice(self, _id: Id, link_type_to_patch_through: Optional[Link]):
-        id_to_patch_through = None
-        if link_type_to_patch_through:
-            id_to_patch_through = self.node_links.lpop((_id, link_type_to_patch_through))
+    def splice(self, _id: Id, link_type_to_patch_through: Link):
+        id_to_patch_through = self.node_links.lpop((_id, link_type_to_patch_through))
         previous_link = self.node_links.rpop(_id)
         if id_to_patch_through is not None and previous_link is not None:
             previous_id, previous_link_type = previous_link
@@ -67,12 +65,12 @@ class UniqueNodeLinks(Generic[Id, Link]):
 
     def _move_after(
             self, _id: Id,
-            link_type_to_patch_though: Optional[Link],
+            link_type_to_patch_though: Link,
             previous_id: Id,
             link_type: Link,
             bumped_link_type: Link
     ):
-        self._splice(_id, link_type_to_patch_though)
+        self.splice(_id, link_type_to_patch_though)
         self.insert_after(_id, previous_id, link_type, bumped_link_type)
 
 
@@ -154,9 +152,9 @@ class Tree(UniqueNodeLinks[Id, TreeLink]):
             include_last=False
         )
 
-    def splice(self, _id: Id) -> None:
+    def remove(self, _id: Id) -> None:
         link_type_to_patch_through = TreeLink.Sibling
-        self._splice(_id, link_type_to_patch_through)
+        self.splice(_id, link_type_to_patch_through)
 
     def move_after(self, _id: Id, previous_id: Id, link_type: Link) -> None:
         link_type_to_patch_though = TreeLink.Sibling
@@ -228,7 +226,7 @@ class NodeTree(Generic[Id, Node]):
         self.tree.move_after(node_context.id, node_context.previous_id, node_context.link_type)
 
     def delete_node(self, _id: Id):
-        self.tree.splice(_id)
+        self.tree.remove(_id)
         self.nodes.pop(_id)
 
     def print_tree(self, _id, left_padding=''):

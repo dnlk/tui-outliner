@@ -90,6 +90,19 @@ class LinkedList(Generic[Id, Item]):
         self.insert_after(new_id, previous_id)
         self.items[new_id] = item
 
+    def remove(self, _id: Id):
+        previous_id = self.get_previous(_id)
+        next_id = self.get_next(_id)
+        link_type_to_patch_through = None
+        self._links.splice(_id, link_type_to_patch_through)
+        self.items.pop(_id)
+        if len(self) == 0:
+            self.first = self.last = self._id_factory.make_invalid_id()
+        elif previous_id and self.last == _id:
+            self.last = previous_id
+        elif next_id and self.first == _id:
+            self.first = next_id
+
     def get_next(self, _id: Id) -> Optional[Id]:
         return self._links.get_next(_id, None)
 
