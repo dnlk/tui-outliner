@@ -45,3 +45,6 @@
 - Block select in tree
 - Mouse support
 - Copy/paste of nodes to clipboard
+- The graphical output gets bugged pretty often. Either do a full refresh sometimes or fix the bugs
+- Fix the ITER_CHUNK_SIZE issue. I think I shouldn't be re-using cursors.
+- Window resizing
