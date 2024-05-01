@@ -34,6 +34,7 @@
 - Just run app.py
 
 # Wishlist
+- Health check for database
 - Mode for displaying the keyboard shortcuts
 - Undo/redo of tree actions
 - Bookmarks and/or tabs for diving between nodes
