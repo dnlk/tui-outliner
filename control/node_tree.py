@@ -3,7 +3,7 @@ from common_imports import *
 from actions import actions as act
 from actions.notifier import ActionNotifier, ChangeAction
 from changes import change as ch
-from changes.changes_for_action import ChangesForAction
+from control.common import ChangesForAction
 from enums import Mode, TreeLink
 from nodes import node as nd
 from ui.ui import UIState

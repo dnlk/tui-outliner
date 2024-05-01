@@ -4,7 +4,7 @@ from common_imports import *
 import actions.actions as act
 from actions.notifier import ActionNotifier, ChangeAction
 import changes.change as ch
-from changes.changes_for_action import ChangesForAction
+from control.common import ChangesForAction
 from data.data import Data
 from enums import Mode
 from nodes.node_types import NodeId

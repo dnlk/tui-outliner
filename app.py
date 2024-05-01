@@ -1,28 +1,17 @@
+import asyncio
 import os
+import sys
 
 from common_imports import *
-
-import asyncio
-import sys
+import consts
+import globals as gls
 
 from ext.geometry import Coord
 
-import globals as gls
-
 from actions.action_events import ActionEventAsync
 from actions.notifier import ActionNotifier
-import consts
-from changes.change import ChangeNotifier
-from changes.handle_change import ChangeHandler
-from control.node_edit import NodeEditController
-from changes.node_filter import NodeFilterChangeHandler
-from changes.node_search import NodeSearchChangeHandler
-from changes.text_editor import TextEditorChangeHandler
-from control.change_action import ActionToChange
-from control.node_tree import NodeTreeController
-from control.node_filter import NodeFilterController
-from control.node_search import NodeSearchController
-from control.text_editor import TextEditorController
+import changes
+import control
 from data.data import Data
 from database import async_db_commands, db, backup, init_db
 import enums
@@ -38,10 +27,8 @@ from ui.ui import UIState
 from view.color import Color
 from view.layout import Layout
 from view.render import RenderLayout
-from view_data_provider.breadcrumbs_data_provider import BreadcrumbsDataProvider
-from view_data_provider.node_tree_data_provider import NodeTreeDataProvider
-from view_data_provider.search_results_data_provider import SearchResultsDataProvider
 from view.ui_components import get_layout
+import view_data_provider
 
 
 class Screen:
@@ -64,7 +51,7 @@ class Screen:
 
 async def process_changes(
     change_queue: asyncio.Queue,
-    change_notifier: ChangeNotifier
+    change_notifier: changes.ChangeNotifier
 ):
     while True:
         next_change_set = await change_queue.get()
@@ -78,7 +65,7 @@ async def action_event_loop(
         screen: Screen,
         layout: Layout,
         action_notifier: ActionNotifier,
-        change_notifier: ChangeNotifier,
+        change_notifier: changes.ChangeNotifier,
 ):
     screen.screen_api.print(str(ui_state.mode), Coord(x=0, y=screen.height - 2), fg_color=Color.White, bg_color=Color.Black)
 
@@ -134,25 +121,25 @@ async def main(db_path: str, window_type: WindowType):
         search_text_data = Data[str](change_queue, '')
         selected_search_item_data = Data[NodeId](change_queue, NodeId(None))
 
-        node_tree_data_provider = NodeTreeDataProvider(ui_state)
-        breadcrumbs_data_provider = BreadcrumbsDataProvider(ui_state)
+        node_tree_data_provider = view_data_provider.NodeTreeDataProvider(ui_state)
+        breadcrumbs_data_provider = view_data_provider.BreadcrumbsDataProvider(ui_state)
 
         action_notifier = ActionNotifier()
-        ActionToChange(action_notifier, ui_state)
-        TextEditorController(action_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, ui_state)
-        NodeTreeController(action_notifier, ui_state)
+        control.ActionToChange(action_notifier, ui_state)
+        control.TextEditorController(action_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, ui_state)
+        control.NodeTreeController(action_notifier, ui_state)
 
-        NodeEditController(ui_state, action_notifier)
-        NodeFilterController(action_notifier, filter_text_data)
-        NodeSearchController(ui_state, action_notifier, search_text_data, selected_search_item_data)
+        control.NodeEditController(ui_state, action_notifier)
+        control.NodeFilterController(action_notifier, filter_text_data)
+        control.NodeSearchController(ui_state, action_notifier, search_text_data, selected_search_item_data)
 
-        change_notifier = ChangeNotifier()
-        ChangeHandler(change_notifier, ui_state, db_commands)
-        TextEditorChangeHandler(change_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, None)
-        NodeFilterChangeHandler(change_notifier, ui_state, db_commands)
-        NodeSearchChangeHandler(change_notifier, ui_state, db_commands)
+        change_notifier = changes.ChangeNotifier()
+        changes.ChangeHandler(change_notifier, ui_state, db_commands)
+        changes.TextEditorChangeHandler(change_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, None)
+        changes.NodeFilterChangeHandler(change_notifier, ui_state, db_commands)
+        changes.NodeSearchChangeHandler(change_notifier, ui_state, db_commands)
 
-        search_result_data_provider = SearchResultsDataProvider(num_max_results=consts.MAX_NUM_SEARCH_RESULTS, ui_state=ui_state)
+        search_result_data_provider = view_data_provider.SearchResultsDataProvider(num_max_results=consts.MAX_NUM_SEARCH_RESULTS, ui_state=ui_state)
 
         layout = get_layout(
             width=screen.width,

@@ -1,5 +1,4 @@
 
-from actions.notifier import ChangeAction
 from changes import change as ch
 from database import db
 from database.async_db_commands import AsyncDbCommands
@@ -35,10 +34,6 @@ class ChangeHandler:
     def _get_selected_node(self):
         if selected_node := self.selection.selected_node_id:
             return self.node_tree.get_node(selected_node)
-
-    def handle(self, change_action: ChangeAction):
-        for change in change_action.changes:
-            self.handle_change(change)
 
     def handle_change(self, change: ch.Change):
         if isinstance(change, ch.ChangeMode):
