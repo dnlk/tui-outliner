@@ -27,12 +27,12 @@ class ActionNotifier:
 
     def register(self, observer: ActionObserver, action_type: Type[Action]):
         key = (observer.mode, action_type)
-        assert key not in self._handlers
+        assert key not in self._handlers, f'{key} already in action handlers'
         self._handlers[key] = observer
 
     def notify_action(self, action: Action) -> ChangeAction:
         key = (action.mode_origin, type(action))
         if key not in self._handlers:
             key = (enums.Mode.All, type(action))
-        assert key in self._handlers
+        assert key in self._handlers, f'{key} not in action handlers'
         return self._handlers[key].determine_changes_from_action(action)

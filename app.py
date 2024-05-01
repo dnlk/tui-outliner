@@ -14,6 +14,7 @@ from actions.notifier import ActionNotifier
 import consts
 from changes.change import ChangeNotifier
 from changes.handle_change import ChangeHandler
+from control.node_edit import NodeEditController
 from changes.node_filter import NodeFilterChangeHandler
 from changes.node_search import NodeSearchChangeHandler
 from changes.text_editor import TextEditorChangeHandler
@@ -141,6 +142,7 @@ async def main(db_path: str, window_type: WindowType):
         TextEditorController(action_notifier, enums.Mode.EditNode, ui_state.node_edit.text_editor, ui_state)
         NodeTreeController(action_notifier, ui_state)
 
+        NodeEditController(ui_state, action_notifier)
         NodeFilterController(action_notifier, filter_text_data)
         NodeSearchController(ui_state, action_notifier, search_text_data, selected_search_item_data)
 

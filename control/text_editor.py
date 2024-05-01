@@ -24,9 +24,9 @@ class TextEditorController:
         action_notifier.register(self, act.CursorDecrementWord)
         action_notifier.register(self, act.CursorRowIncrement)
         action_notifier.register(self, act.CursorRowDecrement)
+        action_notifier.register(self, act.NewParagraphAtCursor)
         action_notifier.register(self, act.RemoveCharacterBeforeCursor)
         action_notifier.register(self, act.RemoveCharacterAtCursor)
-        action_notifier.register(self, act.NewParagraphAtCursor)
 
     @property
     def paragraphs(self):
@@ -69,6 +69,12 @@ class TextEditorController:
                 remaining_width = self.ui_state.get_remaining_text_width_for_selected_node()
                 new_cursor = self.node_edit.text_editor.calculate_cursor.get_cursor_for_decr_row(remaining_width)
                 changes.append(ch.SetCursor(new_cursor).with_mode(self.mode))
+        elif isinstance(action, act.NewParagraphAtCursor):
+            if self.mode == Mode.EditNode:
+                cursor = self.text_editor.cursor
+                new_id = self.text_editor.paragraphs.make_unique_id()
+                changes.append(ch.NewParagraph(cursor, new_id).with_mode(self.mode))
+                changes.append(ch.SetCursor(Cursor(new_id, 0)).with_mode(self.mode))
         elif isinstance(action, act.RemoveCharacterBeforeCursor):
             if self.calculate_cursor.is_origin():
                 # At the beginning - do nothing
@@ -96,11 +102,5 @@ class TextEditorController:
             else:
                 cursor = self.text_editor.cursor
                 changes.append(ch.RemoveCharacter(cursor).with_mode(self.mode))
-        elif isinstance(action, act.NewParagraphAtCursor):
-            if self.mode == Mode.EditNode:
-                cursor = self.text_editor.cursor
-                new_id = self.text_editor.paragraphs.make_unique_id()
-                changes.append(ch.NewParagraph(cursor, new_id).with_mode(self.mode))
-                changes.append(ch.SetCursor(Cursor(new_id, 0)).with_mode(self.mode))
 
         return ChangeAction(changes, action)
