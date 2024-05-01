@@ -5,6 +5,9 @@ from collections import deque
 from common_imports import *
 
 
+ITER_CHUNK_SIZE = 2 ** 20
+
+
 class DatabaseCommand:
     def __init__(self, future: asyncio.Future, coroutine, args, kwargs):
         self.future = future
@@ -30,6 +33,7 @@ class DatabaseQueue:
 async def _process_database_queue(db_path: str, database_queue: DatabaseQueue):
     async with aiosqlite.connect(db_path) as conn:
         cursor = await conn.cursor()
+        cursor.iter_chunk_size = ITER_CHUNK_SIZE
         while True:
             if next_command := database_queue.pop():
                 args = next_command.args or []
@@ -37,6 +41,9 @@ async def _process_database_queue(db_path: str, database_queue: DatabaseQueue):
                 try:
                     command_result = await next_command.coroutine(cursor, *args, **kwargs)
                 except Exception as e:
+                    exit(69)
+                if isinstance(command_result, list) and len(command_result) >= ITER_CHUNK_SIZE:
+                    print(f'Caution: number of results {len(command_result)} >= ITER_CHUNK_SIZE')
                     exit(69)
                 await conn.commit()
                 next_command.future.set_result(command_result)
